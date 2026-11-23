@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VOGUEVA — Smart Luxury Fashion Store</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cormorant Garamond & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            champagne: '#E8D7C3',
+            cream: '#FFF9F2',
+            rosegold: '#C58D78',
+            softbrown: '#A77B62',
+            deepblack: '#242020',
+          },
+          fontFamily: {
+            editorial: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background-color: #FFF9F2; color: #242020; overflow-x: hidden; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up { animation: fadeSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    .zoom-container { overflow: hidden; }
+    .zoom-container img { transition: transform 0.25s ease-out; }
+  </style>
+</head>
+<body class="font-sans bg-cream text-deepblack antialiased selection:bg-rosegold selection:text-white">
+
+  <!-- =====================================================================
+       TOAST NOTIFICATION BANNER (Replaces native alert/confirm)
+  ====================================================================== -->
+  <div id="toastBanner" class="fixed bottom-6 right-6 z-[80] hidden max-w-sm bg-deepblack text-cream px-5 py-3.5 rounded-full shadow-2xl border border-rosegold/40 items-center gap-3">
+    <span class="w-2.5 h-2.5 rounded-full bg-rosegold shrink-0"></span>
+    <span id="toastMessage" class="text-xs font-medium tracking-wide"></span>
+  </div>
+
+  <!-- =====================================================================
+       TOP ANNOUNCEMENT & PRIVACY BAR
+  ====================================================================== -->
+  <div class="bg-deepblack text-champagne text-[11px] tracking-[0.2em] uppercase py-2 px-4 text-center">
+    <span>Complimentary White-Glove Express Delivery Above <strong id="freeShipThreshold">₹9,999</strong></span>
+    <span class="hidden sm:inline mx-2 text-rosegold">•</span>
+    <span class="hidden sm:inline">Privilege Code <strong class="text-white">VOGUE20</strong> for 20% Off</span>
+  </div>
+
+  <!-- =====================================================================
+       1. STICKY HEADER & NAVIGATION
+  ====================================================================== -->
+  <header class="sticky top-0 z-40 bg-cream/90 backdrop-blur-md border-b border-champagne">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
+      <!-- Mobile Menu Button + Logo -->
+      <div class="flex items-center gap-3">
+        <button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-full hover:bg-champagne/40" aria-label="Toggle navigation">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <button onclick="switchView('home')" class="text-left">
+          <span class="font-editorial text-3xl sm:text-4xl font-bold tracking-[0.18em] text-deepblack block leading-none">VOGUEVA</span>
+          <span class="text-[9px] tracking-[0.35em] uppercase text-softbrown block mt-0.5">Maison de Couture</span>
+        </button>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden lg:flex items-center gap-5 text-xs font-semibold uppercase tracking-[0.13em]">
+        <button onclick="switchView('home')" class="nav-link py-1 hover:text-rosegold transition" data-view="home">Home</button>
+        <button onclick="filterByDepartment('Women')" class="nav-link py-1 hover:text-rosegold transition" data-dept="Women">Women</button>
+        <button onclick="filterByDepartment('Men')" class="nav-link py-1 hover:text-rosegold transition" data-dept="Men">Men</button>
+        <button onclick="filterByDepartment('Kids')" class="nav-link py-1 hover:text-rosegold transition" data-dept="Kids">Kids</button>
+        <button onclick="filterByDepartment('Accessories')" class="nav-link py-1 hover:text-rosegold transition" data-dept="Accessories">Accessories</button>
+        <button onclick="switchView('collections')" class="nav-link py-1 hover:text-rosegold transition" data-view="collections">Collections</button>
+        <button onclick="switchView('offers')" class="nav-link py-1 hover:text-rosegold transition" data-view="offers">Offers</button>
+        <button onclick="switchView('ai-studio')" class="nav-link py-1 text-rosegold hover:text-softbrown transition" data-view="ai-studio">AI Studio</button>
+        <button onclick="switchView('track')" class="nav-link py-1 hover:text-rosegold transition" data-view="track">Track</button>
+        <button onclick="switchView('contact')" class="nav-link py-1 hover:text-rosegold transition" data-view="contact">Contact</button>
+      </nav>
+
+      <!-- Right Utility Bar -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Search Input -->
+        <div class="relative hidden md:flex items-center bg-champagne/35 border border-champagne rounded-full px-3.5 py-1.5 w-44 xl:w-56 focus-within:border-rosegold focus-within:bg-white transition">
+          <svg class="w-3.5 h-3.5 text-softbrown mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="headerSearchInput" type="text" oninput="handleSearchInput(this.value)" placeholder="Search silk, gowns, watches..." class="bg-transparent text-xs outline-none w-full placeholder:text-deepblack/45" />
+        </div>
+
+        <!-- Currency Toggle -->
+        <button id="currencyToggleBtn" onclick="toggleCurrency()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-champagne hover:border-rosegold transition">
+          ₹ INR
+        </button>
+
+        <!-- Login / Register Modal Trigger -->
+        <button onclick="openAuthModal()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-champagne hover:border-rosegold text-[11px] font-semibold transition">
+          <span id="authHeaderLabel">Sign In</span>
+        </button>
+
+        <!-- Member Dashboard -->
+        <button onclick="switchView('dashboard')" title="Customer Dashboard & Loyalty" class="p-2 rounded-full hover:bg-champagne/40 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+
+        <!-- Admin Panel -->
+        <button onclick="switchView('admin')" title="Admin Atelier Panel" class="hidden sm:inline-flex p-2 rounded-full hover:bg-champagne/40 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>
+        </button>
+
+        <!-- Wishlist Drawer Trigger -->
+        <button onclick="toggleWishlistDrawer(true)" title="Wishlist & Price Alerts" class="relative p-2 rounded-full hover:bg-champagne/40 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="wishlistBadge" class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-rosegold text-white text-[10px] font-bold flex items-center justify-center">0</span>
+        </button>
+
+        <!-- Cart Drawer Trigger -->
+        <button onclick="toggleCartDrawer(true)" title="Shopping Bag" class="relative p-2 rounded-full bg-deepblack text-cream hover:bg-rosegold transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span id="cartBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rosegold text-white text-[10px] font-bold flex items-center justify-center">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Menu -->
+    <div id="mobileMenu" class="hidden lg:hidden bg-cream border-t border-champagne px-6 py-5 space-y-3">
+      <input type="text" oninput="handleSearchInput(this.value)" placeholder="Search fashion catalog..." class="w-full px-4 py-2 rounded-full bg-champagne/35 border border-champagne text-xs outline-none" />
+      <div class="grid grid-cols-2 gap-2 text-xs font-semibold uppercase tracking-wider">
+        <button onclick="switchView('home'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Home</button>
+        <button onclick="filterByDepartment('Women'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Women</button>
+        <button onclick="filterByDepartment('Men'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Men</button>
+        <button onclick="filterByDepartment('Kids'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Kids</button>
+        <button onclick="filterByDepartment('Accessories'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Accessories</button>
+        <button onclick="switchView('collections'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Collections</button>
+        <button onclick="switchView('offers'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Offers</button>
+        <button onclick="switchView('ai-studio'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl bg-champagne/50 text-deepblack">AI Studio</button>
+        <button onclick="switchView('track'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Track Order</button>
+        <button onclick="switchView('admin'); toggleMobileMenu(false)" class="p-2.5 text-left rounded-xl hover:bg-champagne/40">Admin Panel</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       MAIN DYNAMIC VIEW CONTAINER
+  ====================================================================== -->
+  <main id="appMain">
+
+    <!-- -------------------------------------------------------------------
+         VIEW 1: HOME (Hero, Categories, New Arrivals, Countdown, Trending, Best Sellers, Testimonials)
+    -------------------------------------------------------------------- -->
+    <section id="view-home" class="app-view space-y-20 pb-10 animate-fade-up">
+      <!-- 2. Hero Banner -->
+      <div class="relative min-h-[82vh] flex items-center bg-champagne overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1800&q=85" alt="VOGUEVA Luxury Fashion Campaign" class="absolute inset-0 w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-r from-deepblack/80 via-deepblack/45 to-transparent"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-cream max-w-2xl">
+          <span class="inline-block px-4 py-1.5 rounded-full bg-cream/15 backdrop-blur-xs border border-champagne/30 text-[11px] uppercase tracking-[0.25em] text-champagne mb-6">
+            Atelier Edition 2026
+          </span>
+          <h1 class="font-editorial text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05]">
+            Discover Your Style. <br />
+            <span class="italic font-normal text-champagne">Define Your Fashion.</span>
+          </h1>
+          <p class="mt-6 text-sm sm:text-base text-cream/85 leading-relaxed max-w-lg">
+            Explore timeless fashion, exclusive collections, and trends made for you.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-4">
+            <button onclick="switchView('shop')" class="px-8 py-4 rounded-full bg-rosegold text-white text-xs font-bold uppercase tracking-[0.2em] hover:bg-softbrown transition shadow-xl">
+              Shop Now
+            </button>
+            <button onclick="switchView('collections')" class="px-8 py-4 rounded-full bg-cream text-deepblack text-xs font-bold uppercase tracking-[0.2em] hover:bg-champagne transition">
+              Explore Collections
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Clothing Categories (Women, Men, Kids, Accessories) -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+          <div>
+            <span class="text-xs uppercase tracking-[0.25em] text-softbrown font-semibold">Departments</span>
+            <h2 class="font-editorial text-4xl font-bold mt-1">Shop by Category</h2>
+          </div>
+          <button onclick="switchView('shop')" class="text-xs uppercase tracking-widest font-bold text-rosegold hover:text-deepblack">
+            Browse Full Catalog →
+          </button>
+        </div>
+
+        <div id="homeCategoriesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+
+      <!-- New Arrivals -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between mb-8">
+          <div>
+            <span class="text-xs uppercase tracking-[0.25em] text-softbrown font-semibold">Just Arrived</span>
+            <h2 class="font-editorial text-4xl font-bold mt-1">New Arrivals</h2>
+          </div>
+          <button onclick="switchView('shop')" class="text-xs uppercase tracking-widest font-bold text-rosegold">View All →</button>
+        </div>
+        <div id="homeNewArrivalsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+
+      <!-- Limited-Time Offer Banner with Live Countdown -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="rounded-3xl bg-deepblack text-cream p-8 sm:p-12 border border-rosegold/40 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <div class="space-y-4">
+            <span class="inline-block px-3.5 py-1 rounded-full bg-rosegold/20 text-rosegold text-[11px] font-bold uppercase tracking-widest">
+              Limited-Time Privilege
+            </span>
+            <h2 class="font-editorial text-4xl sm:text-5xl font-bold leading-tight">
+              The Couture & Silk Flash Event
+            </h2>
+            <p class="text-sm text-champagne/80 max-w-md">
+              Save up to 25% on Banarasi handlooms, mulberry silk gowns, and Swiss-inspired timepieces before the countdown ends.
+            </p>
+            <div class="flex items-center gap-3 pt-2">
+              <div class="bg-white/10 border border-champagne/20 rounded-2xl px-4 py-3 text-center min-w-[74px]">
+                <span id="cdHours" class="font-editorial text-3xl font-bold text-champagne block">14</span>
+                <span class="text-[10px] uppercase tracking-widest text-rosegold">Hours</span>
+              </div>
+              <div class="bg-white/10 border border-champagne/20 rounded-2xl px-4 py-3 text-center min-w-[74px]">
+                <span id="cdMins" class="font-editorial text-3xl font-bold text-champagne block">38</span>
+                <span class="text-[10px] uppercase tracking-widest text-rosegold">Minutes</span>
+              </div>
+              <div class="bg-white/10 border border-champagne/20 rounded-2xl px-4 py-3 text-center min-w-[74px]">
+                <span id="cdSecs" class="font-editorial text-3xl font-bold text-champagne block">45</span>
+                <span class="text-[10px] uppercase tracking-widest text-rosegold">Seconds</span>
+              </div>
+            </div>
+            <div class="pt-3">
+              <button onclick="switchView('offers')" class="px-7 py-3.5 rounded-full bg-rosegold text-white text-xs font-bold uppercase tracking-widest hover:bg-softbrown transition">
+                Explore Limited Offers
+              </button>
+            </div>
+          </div>
+          <div class="h-72 sm:h-80 rounded-2xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=85" alt="Evening Couture" class="w-full h-full object-cover" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Trending & Best Sellers -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+        <div>
+          <div class="flex items-end justify-between mb-8">
+            <div>
+              <span class="text-xs uppercase tracking-[0.25em] text-softbrown font-semibold">Most Coveted</span>
+              <h2 class="font-editorial text-4xl font-bold mt-1">Trending Products</h2>
+            </div>
+            <button onclick="switchView('ai-studio')" class="text-xs uppercase tracking-widest font-bold text-rosegold">AI Styling Studio →</button>
+          </div>
+          <div id="homeTrendingGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+        </div>
+
+        <div>
+          <div class="flex items-end justify-between mb-8">
+            <div>
+              <span class="text-xs uppercase tracking-[0.25em] text-softbrown font-semibold">Signature Classics</span>
+              <h2 class="font-editorial text-4xl font-bold mt-1">Best Sellers</h2>
+            </div>
+          </div>
+          <div id="homeBestSellersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+        </div>
+      </div>
+
+      <!-- Customer Testimonials -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+          <span class="text-xs uppercase tracking-[0.25em] text-softbrown font-semibold">Client Stories</span>
+          <h2 class="font-editorial text-4xl font-bold mt-1">What Our Patrons Say</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="p-8 rounded-3xl bg-white border border-champagne space-y-4">
+            <div class="text-rosegold text-sm">★★★★★</div>
+            <p class="font-editorial text-xl italic text-deepblack/90">"The Banarasi silk saree and champagne gown felt bespoke. Delivery arrived ahead of schedule in signature packaging."</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-softbrown">Aanya Sharma — Hyderabad</p>
+          </div>
+          <div class="p-8 rounded-3xl bg-white border border-champagne space-y-4">
+            <div class="text-rosegold text-sm">★★★★★</div>
+            <p class="font-editorial text-xl italic text-deepblack/90">"The Smart Size recommendation nailed my tailored tuxedo fit on the first try. Truly an international luxury experience."</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-softbrown">Rohan Kapoor — Mumbai</p>
+          </div>
+          <div class="p-8 rounded-3xl bg-white border border-champagne space-y-4">
+            <div class="text-rosegold text-sm">★★★★★</div>
+            <p class="font-editorial text-xl italic text-deepblack/90">"Virtual Try-On and Mix & Match Studio make curating occasion outfits effortless and fun."</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-softbrown">Meera Nair — Bengaluru</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 2: SHOP CATALOG WITH ADVANCED FILTERS & SORTING
+    -------------------------------------------------------------------- -->
+    <section id="view-shop" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-up">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-champagne">
+        <div>
+          <span id="shopBreadcrumb" class="text-xs uppercase tracking-[0.2em] text-softbrown font-semibold">All Departments</span>
+          <h1 class="font-editorial text-4xl font-bold mt-1">VOGUEVA Boutique <span id="shopCountLabel" class="text-base font-normal text-deepblack/60"></span></h1>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <input id="shopSearchInput" type="text" oninput="handleSearchInput(this.value)" placeholder="Filter by name, brand, fabric..." class="px-4 py-2.5 rounded-full border border-champagne bg-white text-xs outline-none focus:border-rosegold" />
+          <select id="sortSelect" onchange="renderShopCatalog()" class="px-4 py-2.5 rounded-full border border-champagne bg-white text-xs font-semibold outline-none focus:border-rosegold">
+            <option value="popular">Sort: Most Popular</option>
+            <option value="newest">Sort: New Arrivals</option>
+            <option value="bestseller">Sort: Best Sellers</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Sort: Highest Rated</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 pt-8">
+        <!-- Filter Sidebar -->
+        <aside class="bg-white p-6 rounded-3xl border border-champagne space-y-6 h-fit">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-bold uppercase tracking-widest">Filters</h2>
+            <button onclick="resetAllFilters()" class="text-xs text-rosegold underline font-semibold">Reset</button>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase tracking-wider text-softbrown block mb-2">Category</label>
+            <div id="filterCategoryBtns" class="flex flex-wrap gap-1.5">
+              <button onclick="setFilterState('category', 'All')" data-val="All" class="f-cat px-3 py-1.5 rounded-full text-xs bg-deepblack text-white font-semibold">All</button>
+              <button onclick="setFilterState('category', 'Women')" data-val="Women" class="f-cat px-3 py-1.5 rounded-full text-xs bg-cream border border-champagne">Women</button>
+              <button onclick="setFilterState('category', 'Men')" data-val="Men" class="f-cat px-3 py-1.5 rounded-full text-xs bg-cream border border-champagne">Men</button>
+              <button onclick="setFilterState('category', 'Kids')" data-val="Kids" class="f-cat px-3 py-1.5 rounded-full text-xs bg-cream border border-champagne">Kids</button>
+              <button onclick="setFilterState('category', 'Accessories')" data-val="Accessories" class="f-cat px-3 py-1.5 rounded-full text-xs bg-cream border border-champagne">Accessories</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-[11px] font-bold uppercase tracking-wider text-softbrown mb-2">
+              <span>Max Price</span>
+              <span id="maxPriceLabel">₹50,000</span>
+            </div>
+            <input id="maxPriceRange" type="range" min="2000" max="50000" step="1000" value="50000" oninput="setFilterState('maxPrice', Number(this.value))" class="w-full accent-rosegold" />
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase tracking-wider text-softbrown block mb-2">Fabric</label>
+            <select id="filterFabric" onchange="setFilterState('fabric', this.value)" class="w-full p-2.5 rounded-2xl border border-champagne bg-cream text-xs outline-none">
+              <option value="All">All Fabrics</option>
+              <option value="Silk">Silk</option>
+              <option value="Linen">Linen</option>
+              <option value="Cashmere">Cashmere</option>
+              <option value="Cotton">Cotton</option>
+              <option value="Velvet">Velvet</option>
+              <option value="Leather">Leather</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase tracking-wider text-softbrown block mb-2">Size</label>
+            <select id="filterSize" onchange="setFilterState('size', this.value)" class="w-full p-2.5 rounded-2xl border border-champagne bg-cream text-xs outline-none">
+              <option value="All">All Sizes</option>
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="Free Size">Free Size</option>
+              <option value="One Size">One Size</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase tracking-wider text-softbrown block mb-2">Colour Keyword</label>
+            <select id="filterColor" onchange="setFilterState('color', this.value)" class="w-full p-2.5 rounded-2xl border border-champagne bg-cream text-xs outline-none">
+              <option value="All">All Colours</option>
+              <option value="Champagne">Champagne</option>
+              <option value="Rose">Rose / Blush</option>
+              <option value="Cream">Cream / Ivory</option>
+              <option value="Black">Black / Noir</option>
+              <option value="Brown">Brown / Cognac</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="text-[10px] font-bold uppercase text-softbrown block mb-1">Min Discount</label>
+              <select id="filterDiscount" onchange="setFilterState('discount', Number(this.value))" class="w-full p-2 rounded-xl border border-champagne bg-cream text-xs">
+                <option value="0">Any</option>
+                <option value="15">15%+</option>
+                <option value="20">20%+</option>
+                <option value="25">25%+</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase text-softbrown block mb-1">Rating</label>
+              <select id="filterRating" onchange="setFilterState('rating', Number(this.value))" class="w-full p-2 rounded-xl border border-champagne bg-cream text-xs">
+                <option value="0">All</option>
+                <option value="4.7">4.7★+</option>
+                <option value="4.9">4.9★+</option>
+              </select>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Catalog Products Grid -->
+        <div class="lg:col-span-3">
+          <div id="shopProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 3: FEATURED COLLECTIONS (9 Luxury Collections)
+    -------------------------------------------------------------------- -->
+    <section id="view-collections" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10 animate-fade-up">
+      <div class="text-center max-w-2xl mx-auto space-y-2">
+        <span class="text-xs uppercase tracking-[0.25em] text-softbrown font-semibold">Signature Capsules</span>
+        <h1 class="font-editorial text-5xl font-bold">Featured Fashion Collections</h1>
+        <p class="text-sm text-deepblack/75">Summer, Winter, Wedding, Party Wear, Casual, Office Wear, Traditional, Festive & Luxury edits.</p>
+      </div>
+      <div id="collectionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"></div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 4: OFFERS & COUPONS
+    -------------------------------------------------------------------- -->
+    <section id="view-offers" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 animate-fade-up">
+      <div class="text-center max-w-2xl mx-auto space-y-2">
+        <span class="text-xs uppercase tracking-[0.25em] text-rosegold font-bold">Seasonal Privileges</span>
+        <h1 class="font-editorial text-5xl font-bold">Exclusive Offers & Coupons</h1>
+        <p class="text-sm text-deepblack/75">Buy 1 Get 1 Privileges, Seasonal Sales, Festival Edits, and Member Coupons.</p>
+      </div>
+      <div id="offersCouponsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+      <div>
+        <h2 class="font-editorial text-3xl font-bold mb-6">Special Markdown Pieces</h2>
+        <div id="offersProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 5: AI & SPECIAL FEATURES STUDIO
+    -------------------------------------------------------------------- -->
+    <section id="view-ai-studio" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10 animate-fade-up">
+      <div class="text-center max-w-2xl mx-auto space-y-2">
+        <span class="text-xs uppercase tracking-[0.25em] text-rosegold font-bold">Intelligent Couture Suite</span>
+        <h1 class="font-editorial text-5xl font-bold">AI Stylist, Try-On & Outfit Lab</h1>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-2">
+        <button onclick="switchAiTab('stylist')" data-aitab="stylist" class="ai-tab-btn px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-deepblack text-white">AI Fashion Stylist</button>
+        <button onclick="switchAiTab('tryon')" data-aitab="tryon" class="ai-tab-btn px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white border border-champagne">Virtual Try-On</button>
+        <button onclick="switchAiTab('generator')" data-aitab="generator" class="ai-tab-btn px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white border border-champagne">AI Outfit Generator</button>
+        <button onclick="switchAiTab('mixmatch')" data-aitab="mixmatch" class="ai-tab-btn px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white border border-champagne">Mix & Match Studio</button>
+        <button onclick="switchAiTab('giftcard')" data-aitab="giftcard" class="ai-tab-btn px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white border border-champagne">Gift Shopping</button>
+      </div>
+
+      <!-- AI Tab 1: AI Fashion Stylist -->
+      <div id="ai-tab-stylist" class="ai-tab-panel bg-white p-6 sm:p-10 rounded-3xl border border-champagne grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="space-y-4">
+          <h2 class="font-editorial text-3xl font-bold">AI Fashion Stylist</h2>
+          <p class="text-xs text-deepblack/70">Tell our stylist your occasion, style, budget, and preferred colours.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-bold uppercase text-softbrown block mb-1">Occasion</label>
+              <select id="stylistOccasion" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs">
+                <option>Wedding</option>
+                <option>Party & Gala</option>
+                <option>Office / Formal</option>
+                <option>Vacation / Resort</option>
+                <option>Festive Celebration</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-bold uppercase text-softbrown block mb-1">Clothing Style</label>
+              <select id="stylistStyle" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs">
+                <option>Timeless Luxury</option>
+                <option>Modern Minimalist</option>
+                <option>Heritage Ethnic</option>
+                <option>Bold Evening Glam</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-bold uppercase text-softbrown block mb-1">Budget (₹)</label>
+              <input id="stylistBudget" type="number" value="30000" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+            </div>
+            <div>
+              <label class="text-[11px] font-bold uppercase text-softbrown block mb-1">Preferred Colours</label>
+              <input id="stylistColor" type="text" value="Champagne Beige & Rose Gold" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+            </div>
+          </div>
+          <button onclick="generateStylistRecommendation()" class="w-full py-3.5 rounded-full bg-deepblack text-cream text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">
+            Get Stylist Recommendation
+          </button>
+        </div>
+
+        <div class="bg-cream p-6 rounded-3xl border border-champagne flex flex-col justify-between space-y-4">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-rosegold">Personal Curation</span>
+            <h3 class="font-editorial text-2xl font-bold mt-1">Stylist Notes</h3>
+            <p id="stylistOutput" class="mt-3 text-sm leading-relaxed text-deepblack/85">
+              Choose your occasion, style, budget, and preferred colours on the left to generate a tailored outfit plan.
+            </p>
+          </div>
+          <div id="stylistSuggestedCards" class="grid grid-cols-3 gap-2.5 pt-3 border-t border-champagne"></div>
+        </div>
+      </div>
+
+      <!-- AI Tab 2: Virtual Try-On -->
+      <div id="ai-tab-tryon" class="ai-tab-panel hidden bg-white p-6 sm:p-10 rounded-3xl border border-champagne grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="space-y-4">
+          <h2 class="font-editorial text-3xl font-bold">Virtual Try-On Preview</h2>
+          <p class="text-xs text-deepblack/75">Upload your photo to preview outfits with full privacy protection.</p>
+
+          <label class="flex items-start gap-3 p-4 rounded-2xl bg-cream border border-champagne cursor-pointer">
+            <input id="tryonConsent" type="checkbox" onchange="handleTryonConsentChange()" class="mt-0.5 accent-rosegold" />
+            <span class="text-xs text-deepblack/80">
+              <strong>Privacy & Consent:</strong> I consent to temporary in-browser outfit previewing. Uploaded images stay local to this session and are never shared.
+            </span>
+          </label>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase text-softbrown block mb-1">Upload Your Photograph</label>
+            <input id="tryonPhotoInput" type="file" accept="image/*" disabled onchange="handleTryonPhotoUpload(event)" class="w-full text-xs file:mr-3 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:bg-deepblack file:text-white file:text-xs file:font-semibold disabled:opacity-40" />
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase text-softbrown block mb-1">Select Garment</label>
+            <select id="tryonProductSelect" onchange="updateTryonPreview()" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs"></select>
+          </div>
+        </div>
+
+        <div class="bg-cream p-6 rounded-3xl border border-champagne flex flex-col items-center justify-between gap-4">
+          <div class="relative w-full max-w-xs aspect-[3/4] rounded-2xl overflow-hidden bg-champagne/40 border border-rosegold/40">
+            <img id="tryonUserImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=85" alt="Virtual Try-On Preview" class="w-full h-full object-cover" />
+            <div class="absolute bottom-3 inset-x-3 bg-deepblack/85 backdrop-blur-xs text-cream p-3 rounded-2xl flex items-center gap-3">
+              <img id="tryonGarmentThumb" src="" alt="" class="w-12 h-14 object-cover rounded-xl" />
+              <div class="min-w-0 flex-1">
+                <p id="tryonGarmentName" class="text-xs font-bold truncate"></p>
+                <p id="tryonGarmentPrice" class="text-[11px] text-champagne"></p>
+              </div>
+            </div>
+          </div>
+          <button onclick="addTryonItemToCart()" class="w-full max-w-xs py-3.5 rounded-full bg-deepblack text-white text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">
+            Add Try-On Outfit to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Tab 3: AI Outfit Generator -->
+      <div id="ai-tab-generator" class="ai-tab-panel hidden bg-white p-6 sm:p-10 rounded-3xl border border-champagne space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="font-editorial text-3xl font-bold">AI Outfit Generator by Occasion</h2>
+            <p class="text-xs text-deepblack/70">Pick an occasion to generate a coordinated store look.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="generateOccasionOutfit('Wedding')" class="occ-btn px-4 py-2 rounded-full text-xs font-semibold bg-rosegold text-white">Wedding</button>
+            <button onclick="generateOccasionOutfit('Birthday')" class="occ-btn px-4 py-2 rounded-full text-xs font-semibold bg-cream border border-champagne">Birthday</button>
+            <button onclick="generateOccasionOutfit('Office')" class="occ-btn px-4 py-2 rounded-full text-xs font-semibold bg-cream border border-champagne">Office</button>
+            <button onclick="generateOccasionOutfit('College')" class="occ-btn px-4 py-2 rounded-full text-xs font-semibold bg-cream border border-champagne">College</button>
+            <button onclick="generateOccasionOutfit('Party')" class="occ-btn px-4 py-2 rounded-full text-xs font-semibold bg-cream border border-champagne">Party</button>
+            <button onclick="generateOccasionOutfit('Casual')" class="occ-btn px-4 py-2 rounded-full text-xs font-semibold bg-cream border border-champagne">Casual Outing</button>
+          </div>
+        </div>
+        <div id="generatedOutfitGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+
+      <!-- AI Tab 4: Mix & Match Studio -->
+      <div id="ai-tab-mixmatch" class="ai-tab-panel hidden bg-white p-6 sm:p-10 rounded-3xl border border-champagne space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="font-editorial text-3xl font-bold">Mix & Match Studio</h2>
+            <p class="text-xs text-deepblack/70">Combine tops/dresses, trousers/ethnic, footwear, and accessories.</p>
+          </div>
+          <button onclick="addMixMatchBundleToCart()" class="px-6 py-3 rounded-full bg-deepblack text-white text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">
+            Add Complete Look to Bag
+          </button>
+        </div>
+        <div id="mixMatchSlots" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+
+      <!-- AI Tab 5: Gift Shopping -->
+      <div id="ai-tab-giftcard" class="ai-tab-panel hidden bg-white p-6 sm:p-10 rounded-3xl border border-champagne grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <div class="aspect-[16/10] rounded-3xl bg-gradient-to-br from-deepblack via-[#3b2f2a] to-softbrown p-8 text-cream flex flex-col justify-between border border-rosegold shadow-xl">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="font-editorial text-3xl font-bold tracking-[0.2em]">VOGUEVA</span>
+              <span class="block text-[10px] uppercase tracking-[0.3em] text-champagne">E-Gift Privilege</span>
+            </div>
+            <span class="text-xs px-3 py-1 rounded-full bg-rosegold/30 text-champagne">Instant Delivery</span>
+          </div>
+          <div>
+            <p id="giftCardPreviewAmount" class="font-editorial text-4xl font-bold text-champagne">₹10,000</p>
+            <p id="giftCardPreviewMsg" class="text-xs text-cream/80 italic mt-1">"Wishing you timeless style."</p>
+            <p id="giftCardPreviewTo" class="text-[11px] uppercase tracking-widest text-rosegold mt-2"></p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h2 class="font-editorial text-3xl font-bold">Send a Fashion Gift Card</h2>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="setGiftCardAmount(5000)" class="px-4 py-2 rounded-full text-xs font-bold border border-champagne bg-cream">₹5,000</button>
+            <button onclick="setGiftCardAmount(10000)" class="px-4 py-2 rounded-full text-xs font-bold border border-rosegold bg-deepblack text-white">₹10,000</button>
+            <button onclick="setGiftCardAmount(25000)" class="px-4 py-2 rounded-full text-xs font-bold border border-champagne bg-cream">₹25,000</button>
+          </div>
+          <input id="giftToInput" oninput="updateGiftCardPreview()" type="text" placeholder="Recipient Name" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          <input id="giftMsgInput" oninput="updateGiftCardPreview()" type="text" value="Wishing you timeless style." placeholder="Personal Note" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          <button onclick="addGiftCardToCart()" class="w-full py-3.5 rounded-full bg-rosegold text-white text-xs font-bold uppercase tracking-widest hover:bg-softbrown transition">
+            Add Gift Card to Cart
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 6: CHECKOUT & ORDER CONFIRMATION
+    -------------------------------------------------------------------- -->
+    <section id="view-checkout" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-up">
+      <h1 class="font-editorial text-4xl font-bold mb-8">Checkout & Payment</h1>
+
+      <div id="orderConfirmationBox" class="hidden bg-white p-8 sm:p-12 rounded-3xl border border-rosegold text-center space-y-5 max-w-2xl mx-auto shadow-xl">
+        <span class="text-xs uppercase tracking-[0.25em] text-rosegold font-bold">Order Confirmed</span>
+        <h2 class="font-editorial text-4xl font-bold">Thank You for Shopping at VOGUEVA</h2>
+        <p id="confirmedOrderDetails" class="text-sm text-deepblack/80"></p>
+        <div class="flex justify-center gap-3 pt-2">
+          <button onclick="switchView('track')" class="px-6 py-3 rounded-full bg-deepblack text-white text-xs font-bold uppercase tracking-widest">Track Order</button>
+          <button onclick="switchView('home')" class="px-6 py-3 rounded-full border border-champagne text-xs font-bold uppercase tracking-widest">Back to Home</button>
+        </div>
+      </div>
+
+      <form id="checkoutForm" onsubmit="submitCheckoutOrder(event)" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-white p-6 sm:p-8 rounded-3xl border border-champagne space-y-4">
+            <h2 class="font-editorial text-2xl font-bold">Customer & Delivery Address</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input id="chkName" type="text" required placeholder="Customer Full Name *" class="p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+              <input id="chkPhone" type="tel" required placeholder="Mobile Number *" class="p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+              <input id="chkEmail" type="email" required placeholder="Email Address *" class="sm:col-span-2 p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+              <input id="chkAddress" type="text" required placeholder="Delivery Address *" class="sm:col-span-2 p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+              <input id="chkCity" type="text" required placeholder="City *" class="p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+              <input id="chkPin" type="text" required maxlength="6" placeholder="PIN Code *" class="p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+            </div>
+
+            <div>
+              <label class="text-[11px] font-bold uppercase text-softbrown block mb-1.5">Delivery Option</label>
+              <select id="chkDeliveryOpt" onchange="renderCheckoutSummary()" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs">
+                <option value="Express White-Glove">Express White-Glove Delivery (2–3 Days)</option>
+                <option value="Standard Insured">Standard Insured Delivery (4–6 Days)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 sm:p-8 rounded-3xl border border-champagne space-y-4">
+            <h2 class="font-editorial text-2xl font-bold">Payment Method</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <button type="button" onclick="selectPaymentMethod('UPI')" class="pay-opt py-2.5 px-3 rounded-full text-xs font-bold bg-deepblack text-white">UPI</button>
+              <button type="button" onclick="selectPaymentMethod('Credit Card')" class="pay-opt py-2.5 px-3 rounded-full text-xs font-bold bg-cream border border-champagne">Credit Card</button>
+              <button type="button" onclick="selectPaymentMethod('Debit Card')" class="pay-opt py-2.5 px-3 rounded-full text-xs font-bold bg-cream border border-champagne">Debit Card</button>
+              <button type="button" onclick="selectPaymentMethod('Net Banking')" class="pay-opt py-2.5 px-3 rounded-full text-xs font-bold bg-cream border border-champagne">Net Banking</button>
+              <button type="button" onclick="selectPaymentMethod('Cash on Delivery')" class="pay-opt py-2.5 px-3 rounded-full text-xs font-bold bg-cream border border-champagne">COD</button>
+            </div>
+            <input id="chkPaymentRef" type="text" placeholder="Enter UPI ID (e.g., guest@okbank) or Card / Bank Reference" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          </div>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-champagne h-fit space-y-4">
+          <h2 class="font-editorial text-2xl font-bold">Order Summary</h2>
+          <div id="checkoutItemsList" class="space-y-2.5 max-h-56 overflow-y-auto text-xs"></div>
+
+          <div class="flex gap-2 pt-3 border-t border-champagne">
+            <input id="checkoutCouponInput" type="text" placeholder="Coupon (VOGUE20)" class="flex-1 px-3.5 py-2 rounded-full border border-champagne bg-cream text-xs uppercase" />
+            <button type="button" onclick="applyCouponCode(document.getElementById('checkoutCouponInput').value)" class="px-4 py-2 rounded-full bg-deepblack text-white text-xs font-semibold">Apply</button>
+          </div>
+
+          <div id="checkoutTotalsBox" class="space-y-1.5 text-xs pt-2 border-t border-champagne"></div>
+
+          <button type="submit" class="w-full py-4 rounded-full bg-rosegold text-white text-xs font-bold uppercase tracking-[0.2em] hover:bg-softbrown transition shadow-lg">
+            Verify Payment & Place Order
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 7: ORDER TRACKING & RETURNS
+    -------------------------------------------------------------------- -->
+    <section id="view-track" class="app-view hidden max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 animate-fade-up">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span class="text-xs uppercase tracking-[0.25em] text-softbrown font-semibold">Fulfillment Tracker</span>
+          <h1 class="font-editorial text-4xl font-bold mt-1">Order Tracking</h1>
+        </div>
+        <select id="trackOrderSelector" onchange="renderOrderTracking()" class="px-4 py-2.5 rounded-full border border-champagne bg-white text-xs font-bold"></select>
+      </div>
+      <div id="orderTrackingCard" class="bg-white p-6 sm:p-10 rounded-3xl border border-champagne space-y-6"></div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 8: CUSTOMER DASHBOARD & LOYALTY PROGRAM
+    -------------------------------------------------------------------- -->
+    <section id="view-dashboard" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 animate-fade-up">
+      <div class="rounded-3xl bg-gradient-to-r from-deepblack via-[#3b2f2a] to-softbrown p-8 text-cream flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <span id="dashTierBadge" class="text-xs uppercase tracking-[0.25em] text-champagne font-bold">Gold Member</span>
+          <h1 id="dashUserName" class="font-editorial text-4xl font-bold mt-1">Aanya Sharma</h1>
+          <p id="dashUserMeta" class="text-xs text-cream/80 mt-1">Silver (0+ pts) • Gold (2,000+ pts) • Platinum (5,000+ pts)</p>
+        </div>
+        <div class="bg-white/10 border border-champagne/25 rounded-2xl p-5 min-w-[210px]">
+          <span class="text-[10px] uppercase tracking-widest text-champagne">Loyalty Points</span>
+          <p id="dashPointsValue" class="font-editorial text-4xl font-bold text-rosegold">2,450 pts</p>
+          <button onclick="redeemLoyaltyPoints()" class="mt-2 px-4 py-1.5 rounded-full bg-cream text-deepblack text-[11px] font-bold hover:bg-champagne">Redeem 500 Pts</button>
+        </div>
+      </div>
+
+      <div id="dashboardContentGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-6"></div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 9: ADMIN DASHBOARD
+    -------------------------------------------------------------------- -->
+    <section id="view-admin" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 animate-fade-up">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span class="text-xs uppercase tracking-[0.25em] text-rosegold font-bold">Store Operations</span>
+          <h1 class="font-editorial text-4xl font-bold mt-1">VOGUEVA Admin Panel</h1>
+        </div>
+        <div id="adminKpis" class="flex flex-wrap gap-3 text-xs font-bold"></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Add Product Form -->
+        <form onsubmit="adminAddProduct(event)" class="bg-white p-6 rounded-3xl border border-champagne space-y-3 h-fit">
+          <h2 class="font-editorial text-2xl font-bold">Add / Publish Product</h2>
+          <input id="admProdName" type="text" required placeholder="Product Name" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          <div class="grid grid-cols-2 gap-2">
+            <select id="admProdCat" class="p-3 rounded-2xl border border-champagne bg-cream text-xs">
+              <option>Women</option><option>Men</option><option>Kids</option><option>Accessories</option>
+            </select>
+            <input id="admProdSub" type="text" value="Dresses" placeholder="Sub-Category" class="p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="admProdPrice" type="number" required value="16500" placeholder="Sale Price" class="p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+            <input id="admProdOrig" type="number" value="21000" placeholder="Original Price" class="p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="admProdFabric" class="p-3 rounded-2xl border border-champagne bg-cream text-xs">
+              <option>Silk</option><option>Linen</option><option>Cashmere</option><option>Cotton</option><option>Leather</option>
+            </select>
+            <input id="admProdStock" type="number" value="12" placeholder="Stock Qty" class="p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          </div>
+          <input id="admProdImg" type="url" value="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=85" placeholder="Image URL" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          <button type="submit" class="w-full py-3.5 rounded-full bg-deepblack text-white text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">
+            Save Product
+          </button>
+        </form>
+
+        <!-- Inventory & Orders List -->
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-white p-6 rounded-3xl border border-champagne space-y-3">
+            <h2 class="font-editorial text-2xl font-bold">Inventory & Stock Control</h2>
+            <div id="adminProductsList" class="space-y-2.5 max-h-80 overflow-y-auto pr-1"></div>
+          </div>
+
+          <div class="bg-white p-6 rounded-3xl border border-champagne space-y-3">
+            <h2 class="font-editorial text-2xl font-bold">Customer Orders Fulfillment</h2>
+            <div id="adminOrdersList" class="space-y-2.5"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         VIEW 10: CONTACT, FAQS & POLICIES
+    -------------------------------------------------------------------- -->
+    <section id="view-contact" class="app-view hidden max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10 animate-fade-up">
+      <div class="text-center max-w-2xl mx-auto space-y-2">
+        <span class="text-xs uppercase tracking-[0.25em] text-softbrown font-semibold">Client Concierge</span>
+        <h1 class="font-editorial text-5xl font-bold">Contact VOGUEVA</h1>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <form onsubmit="submitContactForm(event)" class="bg-white p-8 rounded-3xl border border-champagne space-y-4">
+          <h2 class="font-editorial text-2xl font-bold">Send a Message</h2>
+          <input type="text" required placeholder="Your Name" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          <input type="email" required placeholder="Your Email" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs" />
+          <textarea rows="4" required placeholder="How may our couture concierge assist you?" class="w-full p-3 rounded-2xl border border-champagne bg-cream text-xs"></textarea>
+          <button type="submit" class="w-full py-3.5 rounded-full bg-deepblack text-white text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">Send Inquiry</button>
+        </form>
+
+        <div class="bg-white p-8 rounded-3xl border border-champagne space-y-4 text-xs leading-relaxed">
+          <h2 class="font-editorial text-2xl font-bold">Boutique & Policies</h2>
+          <p><strong>Flagship Atelier:</strong> Road No. 36, Jubilee Hills, Hyderabad • <strong>Concierge:</strong> concierge@vogueva.com • +91 40 6789 2400</p>
+          <p><strong>Shipping Policy:</strong> Insured white-glove delivery nationwide and express international shipping.</p>
+          <p><strong>Return & Refund Policy:</strong> Easy 14-day unworn returns or size exchanges with original tags intact.</p>
+          <p><strong>Privacy & Terms:</strong> Your personal data, shopping preferences, and try-on photos are safeguarded under strict privacy standards.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =====================================================================
+       PRODUCT DETAILS & QUICK VIEW MODAL (Zoom, Smart Size, Reviews, Similar)
+  ====================================================================== -->
+  <div id="productDetailModal" class="fixed inset-0 z-50 hidden bg-deepblack/70 backdrop-blur-xs items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-cream border border-champagne rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-y-auto p-6 sm:p-10 relative shadow-2xl animate-fade-up">
+      <button onclick="closeProductModal()" class="sticky top-0 float-right p-2.5 rounded-full bg-white border border-champagne hover:bg-deepblack hover:text-white transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div id="productDetailBody" class="clear-both"></div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       SLIDE-OUT SHOPPING CART DRAWER
+  ====================================================================== -->
+  <div id="cartDrawer" class="fixed inset-0 z-50 hidden bg-deepblack/60 backdrop-blur-xs justify-end">
+    <div class="w-full max-w-md bg-cream h-full flex flex-col justify-between border-l border-champagne shadow-2xl">
+      <div class="p-6 border-b border-champagne flex items-center justify-between">
+        <div>
+          <h2 class="font-editorial text-2xl font-bold">Shopping Bag</h2>
+          <p id="cartSubtitle" class="text-xs text-softbrown">0 items</p>
+        </div>
+        <button onclick="toggleCartDrawer(false)" class="p-2 rounded-full hover:bg-champagne/40">✕</button>
+      </div>
+
+      <div id="cartItemsContainer" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+
+      <div class="p-6 border-t border-champagne bg-champagne/25 space-y-4">
+        <div class="flex gap-2">
+          <input id="drawerCouponInput" type="text" placeholder="Code (VOGUE20 / LUXURY500)" class="flex-1 px-4 py-2.5 rounded-full bg-white border border-champagne text-xs uppercase outline-none" />
+          <button onclick="applyCouponCode(document.getElementById('drawerCouponInput').value)" class="px-5 py-2.5 rounded-full bg-deepblack text-white text-xs font-bold">Apply</button>
+        </div>
+        <div id="cartTotalsSummary" class="space-y-1.5 text-xs"></div>
+        <button onclick="proceedToCheckout()" class="w-full py-4 rounded-full bg-deepblack text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-rosegold transition">
+          Proceed to Checkout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       SLIDE-OUT WISHLIST DRAWER
+  ====================================================================== -->
+  <div id="wishlistDrawer" class="fixed inset-0 z-50 hidden bg-deepblack/60 backdrop-blur-xs justify-end">
+    <div class="w-full max-w-md bg-cream h-full flex flex-col justify-between border-l border-champagne shadow-2xl">
+      <div class="p-6 border-b border-champagne flex items-center justify-between">
+        <div>
+          <h2 class="font-editorial text-2xl font-bold">Saved Wishlist</h2>
+          <p class="text-xs text-softbrown">Price-drop alerts & quick bag transfer</p>
+        </div>
+        <button onclick="toggleWishlistDrawer(false)" class="p-2 rounded-full hover:bg-champagne/40">✕</button>
+      </div>
+      <div id="wishlistItemsContainer" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       LOGIN / REGISTER MODAL
+  ====================================================================== -->
+  <div id="authModal" class="fixed inset-0 z-50 hidden bg-deepblack/70 backdrop-blur-xs items-center justify-center p-4">
+    <div class="bg-cream border border-champagne rounded-3xl max-w-md w-full p-8 space-y-5 relative shadow-2xl">
+      <button onclick="closeAuthModal()" class="absolute top-5 right-5 p-2 rounded-full hover:bg-champagne/40">✕</button>
+      <h2 class="font-editorial text-3xl font-bold">Member Sign In / Register</h2>
+      <p class="text-xs text-deepblack/70">Access your VOGUEVA loyalty points, saved addresses, and order history.</p>
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-3">
+        <input id="authNameInput" type="text" required value="Aanya Sharma" placeholder="Full Name" class="w-full p-3 rounded-2xl border border-champagne bg-white text-xs" />
+        <input id="authEmailInput" type="email" required value="aanya.sharma@luxury.in" placeholder="Email Address" class="w-full p-3 rounded-2xl border border-champagne bg-white text-xs" />
+        <button type="submit" class="w-full py-3.5 rounded-full bg-deepblack text-white text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">
+          Continue to Member Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       8. FOOTER & NEWSLETTER
+  ====================================================================== -->
+  <footer class="bg-deepblack text-champagne mt-20 border-t border-softbrown/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div class="space-y-4">
+        <h3 class="font-editorial text-3xl font-bold tracking-[0.2em] text-cream">VOGUEVA</h3>
+        <p class="text-xs text-champagne/75 leading-relaxed">
+          International luxury fashion house uniting artisanal craftsmanship, smart AI styling, and seamless online shopping.
+        </p>
+        <div class="flex gap-2">
+          <button onclick="showToast('VOGUEVA Instagram @vogueva.official')" class="px-3 py-1.5 rounded-full border border-champagne/25 text-[11px] hover:border-rosegold">Instagram</button>
+          <button onclick="showToast('VOGUEVA Facebook Lookbook')" class="px-3 py-1.5 rounded-full border border-champagne/25 text-[11px] hover:border-rosegold">Facebook</button>
+          <button onclick="showToast('VOGUEVA Pinterest Boards')" class="px-3 py-1.5 rounded-full border border-champagne/25 text-[11px] hover:border-rosegold">Pinterest</button>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-rosegold mb-4">Navigation</h4>
+        <ul class="space-y-2 text-xs text-champagne/80">
+          <li><button onclick="switchView('home')" class="hover:text-white">Home</button></li>
+          <li><button onclick="switchView('collections')" class="hover:text-white">Collections</button></li>
+          <li><button onclick="switchView('offers')" class="hover:text-white">Offers & Coupons</button></li>
+          <li><button onclick="switchView('ai-studio')" class="hover:text-white">AI Fashion Studio</button></li>
+          <li><button onclick="switchView('track')" class="hover:text-white">Track Order</button></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-rosegold mb-4">Policies & Support</h4>
+        <ul class="space-y-2 text-xs text-champagne/80">
+          <li><button onclick="switchView('contact')" class="hover:text-white">About Us & Contact</button></li>
+          <li><button onclick="switchView('contact')" class="hover:text-white">Shipping & Return Policy</button></li>
+          <li><button onclick="switchView('contact')" class="hover:text-white">Privacy Policy & Terms</button></li>
+          <li><span>concierge@vogueva.com</span></li>
+          <li><span>+91 40 6789 2400</span></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-rosegold mb-4">Newsletter Subscription</h4>
+        <p class="text-xs text-champagne/75 mb-3">Subscribe for new arrivals, private sales, and fashion dispatches.</p>
+        <form onsubmit="handleNewsletter(event)" class="flex gap-2">
+          <input type="email" required placeholder="Enter email" class="flex-1 px-4 py-2.5 rounded-full bg-white/10 border border-champagne/25 text-xs text-white placeholder:text-champagne/50 outline-none focus:border-rosegold" />
+          <button type="submit" class="px-4 py-2.5 rounded-full bg-rosegold text-white text-xs font-bold hover:bg-softbrown transition">Subscribe</button>
+        </form>
+      </div>
+    </div>
+    <div class="border-t border-white/10 py-5 text-center text-[11px] text-champagne/50">
+      © 2026 VOGUEVA Smart Fashion Store. All Rights Reserved.
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       APPLICATION STATE & INTERACTIVE JAVASCRIPT
+  ====================================================================== -->
+  <script>
+    const PRODUCTS = [
+      {
+        id: 'p1', name: 'Aurelia Draped Silk Evening Gown', brand: 'VOGUEVA ATELIER', category: 'Women', subCategory: 'Dresses',
+        collection: 'Luxury Collection', originalPrice: 28900, price: 22490, sizes: ['XS', 'S', 'M', 'L'],
+        colors: [{ name: 'Champagne Gold', hex: '#E8D7C3' }, { name: 'Rosewood', hex: '#C58D78' }],
+        fabric: 'Silk', rating: 4.9, reviews: 142, stock: 14, isNew: true, isTrending: true, isBestSeller: true, priceDrop: true,
+        images: [
+          'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=85',
+          'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=85'
+        ],
+        description: 'Bias-cut pure mulberry silk gown with fluid movement and sculpted neckline.',
+        sizeChart: { XS: 'Bust 32" | Waist 25"', S: 'Bust 34" | Waist 27"', M: 'Bust 36" | Waist 29"', L: 'Bust 38" | Waist 31"' }
+      },
+      {
+        id: 'p2', name: 'Banarasi Handloom Zari Silk Saree', brand: 'VOGUEVA HERITAGE', category: 'Women', subCategory: 'Sarees and Ethnic Wear',
+        collection: 'Wedding Collection', originalPrice: 34500, price: 27900, sizes: ['Free Size'],
+        colors: [{ name: 'Rose Gold Blush', hex: '#C58D78' }, { name: 'Ivory Cream', hex: '#FFF9F2' }],
+        fabric: 'Silk', rating: 5.0, reviews: 98, stock: 8, isNew: true, isTrending: true, isBestSeller: false, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=85'],
+        description: 'Handwoven katan silk saree with intricate zari motifs for weddings and celebrations.',
+        sizeChart: { 'Free Size': '6.3m length including unstitched blouse piece' }
+      },
+      {
+        id: 'p3', name: 'Cashmere Double-Breasted Overcoat', brand: 'VOGUEVA MILANO', category: 'Women', subCategory: 'Jackets',
+        collection: 'Winter Collection', originalPrice: 32000, price: 25600, sizes: ['XS', 'S', 'M', 'L'],
+        colors: [{ name: 'Soft Brown Camel', hex: '#A77B62' }, { name: 'Champagne', hex: '#E8D7C3' }],
+        fabric: 'Cashmere', rating: 4.8, reviews: 76, stock: 11, isNew: false, isTrending: true, isBestSeller: true, priceDrop: true,
+        images: ['https://images.unsplash.com/photo-1539533018447-63fcce2678e3?auto=format&fit=crop&w=900&q=85'],
+        description: 'Structured double-faced cashmere coat tailored for cold-weather sophistication.',
+        sizeChart: { XS: 'Chest 35"', S: 'Chest 37"', M: 'Chest 39"', L: 'Chest 41"' }
+      },
+      {
+        id: 'p4', name: 'Chanderi Embroidered Kurti Ensemble', brand: 'VOGUEVA HERITAGE', category: 'Women', subCategory: 'Kurtis',
+        collection: 'Festive Collection', originalPrice: 14900, price: 11200, sizes: ['S', 'M', 'L', 'XL'],
+        colors: [{ name: 'Cream White', hex: '#FFF9F2' }, { name: 'Rose Gold', hex: '#C58D78' }],
+        fabric: 'Silk', rating: 4.7, reviews: 164, stock: 22, isNew: true, isTrending: false, isBestSeller: true, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=900&q=85'],
+        description: 'Luminous Chanderi silk-cotton kurti with delicate threadwork and tailored bottom.',
+        sizeChart: { S: 'Bust 36"', M: 'Bust 38"', L: 'Bust 40"', XL: 'Bust 42"' }
+      },
+      {
+        id: 'p5', name: 'Belgian Linen Tailored Blazer', brand: 'VOGUEVA STUDIO', category: 'Women', subCategory: 'Tops and Shirts',
+        collection: 'Office Wear Collection', originalPrice: 12800, price: 9600, sizes: ['XS', 'S', 'M', 'L'],
+        colors: [{ name: 'Champagne Sand', hex: '#E8D7C3' }, { name: 'Soft Brown', hex: '#A77B62' }],
+        fabric: 'Linen', rating: 4.7, reviews: 89, stock: 19, isNew: false, isTrending: true, isBestSeller: false, priceDrop: true,
+        images: ['https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=900&q=85'],
+        description: 'Breathable linen blazer designed for modern executive styling.',
+        sizeChart: { XS: 'Bust 33"', S: 'Bust 35"', M: 'Bust 37"', L: 'Bust 39"' }
+      },
+      {
+        id: 'p6', name: 'High-Waist Wide Trousers', brand: 'VOGUEVA STUDIO', category: 'Women', subCategory: 'Jeans and Trousers',
+        collection: 'Office Wear Collection', originalPrice: 8900, price: 6950, sizes: ['S', 'M', 'L'],
+        colors: [{ name: 'Deep Black', hex: '#242020' }, { name: 'Champagne', hex: '#E8D7C3' }],
+        fabric: 'Cotton', rating: 4.8, reviews: 112, stock: 28, isNew: true, isTrending: false, isBestSeller: true, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=900&q=85'],
+        description: 'Pleated wide-leg trousers with an elongating drape.',
+        sizeChart: { S: 'Waist 28"', M: 'Waist 30"', L: 'Waist 32"' }
+      },
+      {
+        id: 'p7', name: 'Italian Wool Evening Suit', brand: 'VOGUEVA UOMO', category: 'Men', subCategory: 'Formal Wear',
+        collection: 'Luxury Collection', originalPrice: 42000, price: 33600, sizes: ['M', 'L', 'XL'],
+        colors: [{ name: 'Deep Black', hex: '#242020' }, { name: 'Champagne Ivory', hex: '#E8D7C3' }],
+        fabric: 'Cashmere', rating: 4.9, reviews: 84, stock: 9, isNew: true, isTrending: true, isBestSeller: true, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=85'],
+        description: 'Sharp sartorial evening suit crafted in fine wool-cashmere blend.',
+        sizeChart: { M: 'Chest 40"', L: 'Chest 42"', XL: 'Chest 44"' }
+      },
+      {
+        id: 'p8', name: 'Amalfi Linen Resort Shirt', brand: 'VOGUEVA UOMO', category: 'Men', subCategory: 'Shirts',
+        collection: 'Summer Collection', originalPrice: 6800, price: 4990, sizes: ['S', 'M', 'L', 'XL'],
+        colors: [{ name: 'Cream White', hex: '#FFF9F2' }, { name: 'Rose Gold', hex: '#C58D78' }],
+        fabric: 'Linen', rating: 4.7, reviews: 151, stock: 34, isNew: false, isTrending: true, isBestSeller: true, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=900&q=85'],
+        description: 'Airy linen shirt ideal for summer resort days and smart-casual evenings.',
+        sizeChart: { S: 'Chest 39"', M: 'Chest 41"', L: 'Chest 43"', XL: 'Chest 45"' }
+      },
+      {
+        id: 'p9', name: 'Supima Cotton Crew T-Shirt', brand: 'VOGUEVA ESSENTIALS', category: 'Men', subCategory: 'T-Shirts',
+        collection: 'Casual Collection', originalPrice: 3900, price: 2790, sizes: ['S', 'M', 'L', 'XL'],
+        colors: [{ name: 'Deep Black', hex: '#242020' }, { name: 'Soft Brown', hex: '#A77B62' }],
+        fabric: 'Cotton', rating: 4.6, reviews: 210, stock: 45, isNew: false, isTrending: false, isBestSeller: true, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85'],
+        description: 'Ultra-soft Supima cotton tee with structured collar.',
+        sizeChart: { S: 'Chest 38"', M: 'Chest 40"', L: 'Chest 42"', XL: 'Chest 44"' }
+      },
+      {
+        id: 'p10', name: 'Suede Bomber Jacket', brand: 'VOGUEVA UOMO', category: 'Men', subCategory: 'Jackets',
+        collection: 'Winter Collection', originalPrice: 26500, price: 21200, sizes: ['M', 'L', 'XL'],
+        colors: [{ name: 'Soft Brown', hex: '#A77B62' }],
+        fabric: 'Leather', rating: 4.9, reviews: 54, stock: 10, isNew: true, isTrending: true, isBestSeller: false, priceDrop: true,
+        images: ['https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=85'],
+        description: 'Supple suede bomber jacket with refined hardware.',
+        sizeChart: { M: 'Chest 41"', L: 'Chest 43"', XL: 'Chest 45"' }
+      },
+      {
+        id: 'p11', name: 'Junior Festive Linen Set', brand: 'VOGUEVA ENFANT', category: 'Kids', subCategory: 'Boys Clothing',
+        collection: 'Festive Collection', originalPrice: 5800, price: 4490, sizes: ['S', 'M', 'L'],
+        colors: [{ name: 'Champagne', hex: '#E8D7C3' }, { name: 'Soft Brown', hex: '#A77B62' }],
+        fabric: 'Linen', rating: 4.8, reviews: 58, stock: 20, isNew: true, isTrending: false, isBestSeller: true, priceDrop: true,
+        images: ['https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=900&q=85'],
+        description: 'Comfortable breathable festive ensemble for kids.',
+        sizeChart: { S: '4-5Y', M: '6-7Y', L: '8-9Y' }
+      },
+      {
+        id: 'p12', name: 'Velvet & Tulle Party Dress', brand: 'VOGUEVA ENFANT', category: 'Kids', subCategory: 'Girls Clothing',
+        collection: 'Party Wear Collection', originalPrice: 6900, price: 5190, sizes: ['XS', 'S', 'M'],
+        colors: [{ name: 'Rose Gold', hex: '#C58D78' }],
+        fabric: 'Velvet', rating: 4.9, reviews: 72, stock: 18, isNew: true, isTrending: true, isBestSeller: false, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=900&q=85'],
+        description: 'Soft velvet bodice and airy tulle skirt for special celebrations.',
+        sizeChart: { XS: '2-3Y', S: '4-5Y', M: '6-7Y' }
+      },
+      {
+        id: 'p13', name: 'Celeste Calfskin Top-Handle Bag', brand: 'VOGUEVA MAROQUINERIE', category: 'Accessories', subCategory: 'Handbags',
+        collection: 'Luxury Collection', originalPrice: 29500, price: 23900, sizes: ['One Size'],
+        colors: [{ name: 'Champagne', hex: '#E8D7C3' }, { name: 'Rose Gold', hex: '#C58D78' }, { name: 'Deep Black', hex: '#242020' }],
+        fabric: 'Leather', rating: 4.9, reviews: 132, stock: 12, isNew: true, isTrending: true, isBestSeller: true, priceDrop: true,
+        images: ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=85'],
+        description: 'Structured leather handbag with rose-gold clasp.',
+        sizeChart: { 'One Size': '24cm W x 18cm H x 10cm D' }
+      },
+      {
+        id: 'p14', name: 'Aurelius Rose-Gold Watch', brand: 'VOGUEVA HORLOGERIE', category: 'Accessories', subCategory: 'Watches',
+        collection: 'Luxury Collection', originalPrice: 45000, price: 36500, sizes: ['One Size'],
+        colors: [{ name: 'Rose Gold', hex: '#C58D78' }, { name: 'Soft Brown', hex: '#A77B62' }],
+        fabric: 'Leather', rating: 4.9, reviews: 67, stock: 6, isNew: false, isTrending: true, isBestSeller: false, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=900&q=85'],
+        description: 'Rose-gold tone dress watch with supple leather strap.',
+        sizeChart: { 'One Size': '38mm dial case' }
+      },
+      {
+        id: 'p15', name: 'Venezia Nappa Leather Mules', brand: 'VOGUEVA FOOTWEAR', category: 'Women', subCategory: 'Footwear',
+        collection: 'Party Wear Collection', originalPrice: 13500, price: 10400, sizes: ['S', 'M', 'L'],
+        colors: [{ name: 'Champagne', hex: '#E8D7C3' }, { name: 'Rose Gold', hex: '#C58D78' }],
+        fabric: 'Leather', rating: 4.8, reviews: 95, stock: 16, isNew: false, isTrending: true, isBestSeller: true, priceDrop: false,
+        images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=900&q=85'],
+        description: 'Pointed-toe nappa leather heels crafted for evening comfort.',
+        sizeChart: { S: 'EU 37', M: 'EU 38', L: 'EU 39' }
+      },
+      {
+        id: 'p16', name: 'Freshwater Pearl Choker', brand: 'VOGUEVA JOAILLERIE', category: 'Accessories', subCategory: 'Jewellery',
+        collection: 'Traditional Collection', originalPrice: 11500, price: 8900, sizes: ['One Size'],
+        colors: [{ name: 'Rose Gold', hex: '#C58D78' }, { name: 'Cream White', hex: '#FFF9F2' }],
+        fabric: 'Silk', rating: 4.8, reviews: 119, stock: 17, isNew: false, isTrending: false, isBestSeller: true, priceDrop: true,
+        images: ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=900&q=85'],
+        description: 'Lustrous pearl strand with rose-gold clasp.',
+        sizeChart: { 'One Size': 'Adjustable 38cm - 43cm' }
+      }
+    ];
+
+    const CATEGORIES_INFO = [
+      {
+        name: 'Women', sub: 'Dresses • Sarees • Kurtis • Jackets • Footwear',
+        img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=85'
+      },
+      {
+        name: 'Men', sub: 'T-Shirts • Shirts • Formal • Jackets • Shoes',
+        img: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=900&q=85'
+      },
+      {
+        name: 'Kids', sub: 'Boys • Girls • Baby Wear • Party Wear',
+        img: 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=900&q=85'
+      },
+      {
+        name: 'Accessories', sub: 'Handbags • Watches • Sunglasses • Jewellery',
+        img: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=85'
+      }
+    ];
+
+    const COLLECTIONS_LIST = [
+      { name: 'Summer Collection', desc: 'Breathable linens and sunlit silhouettes.', img: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=900&q=85' },
+      { name: 'Winter Collection', desc: 'Cashmere coats and warm suede layers.', img: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?auto=format&fit=crop&w=900&q=85' },
+      { name: 'Wedding Collection', desc: 'Ceremonial silks and bridal weaves.', img: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=85' },
+      { name: 'Party Wear Collection', desc: 'Evening gowns, heels, and statement pieces.', img: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=85' },
+      { name: 'Casual Collection', desc: 'Supima tees and everyday staples.', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=85' },
+      { name: 'Office Wear Collection', desc: 'Tailored blazers and refined trousers.', img: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=900&q=85' },
+      { name: 'Traditional Collection', desc: 'Heritage craftsmanship and pearls.', img: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=900&q=85' },
+      { name: 'Festive Collection', desc: 'Chanderi sets and celebratory edits.', img: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=900&q=85' },
+      { name: 'Luxury Collection', desc: 'Atelier silk gowns, suits, and bags.', img: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=85' }
+    ];
+
+    const COUPONS = [
+      { code: 'VOGUE20', type: 'percent', value: 20, min: 5000, desc: '20% off orders above ₹5,000' },
+      { code: 'LUXURY500', type: 'flat', value: 1500, min: 10000, desc: 'Flat ₹1,500 off orders above ₹10,000' },
+      { code: 'FIRST15', type: 'percent', value: 15, min: 0, desc: '15% Welcome Offer on any order' },
+      { code: 'BOGO25', type: 'percent', value: 25, min: 8000, desc: '25% Festival & BOGO Privilege' }
+    ];
+
+    const state = {
+      currency: 'INR',
+      user: { name: 'Aanya Sharma', email: 'aanya.sharma@luxury.in', points: 2450 },
+      filters: { search: '', category: 'All', collection: 'All', maxPrice: 50000, fabric: 'All', size: 'All', color: 'All', discount: 0, rating: 0 },
+      cart: [
+        { cartId: 'p1-S-Champagne Gold', id: 'p1', name: 'Aurelia Draped Silk Evening Gown', price: 22490, size: 'S', color: 'Champagne Gold', qty: 1, image: PRODUCTS[0].images[0] }
+      ],
+      wishlist: ['p2', 'p13'],
+      recentlyViewed: ['p1', 'p2', 'p13'],
+      appliedCoupon: null,
+      paymentMethod: 'UPI',
+      giftAmount: 10000,
+      mixIndices: [0, 0, 0, 0],
+      orders: [
+        {
+          id: 'VGV-2026-5012', date: '2026-11-19', status: 'Out for Delivery', eta: '2026-11-24',
+          customer: 'Aanya Sharma', address: 'Jubilee Hills, Hyderabad - 500033', payment: 'UPI',
+          total: 22490, returnRequested: false,
+          items: [{ name: 'Aurelia Draped Silk Evening Gown', size: 'S', color: 'Champagne Gold', qty: 1, price: 22490, image: PRODUCTS[0].images[0] }]
+        }
+      ],
+      reviews: {
+        p1: [{ author: 'Meera Kapoor', rating: 5, text: 'Liquid silk drape and flattering fit.' }]
+      }
+    };
+
+    function formatPrice(inr) {
+      if (state.currency === 'USD') {
+        return '$' + Math.round(inr / 84).toLocaleString('en-US');
+      }
+      return '₹' + Math.round(inr).toLocaleString('en-IN');
+    }
+
+    function getDiscount(orig, price) {
+      return orig > price ? Math.round(((orig - price) / orig) * 100) : 0;
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toastBanner');
+      document.getElementById('toastMessage').textContent = msg;
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+      }, 3200);
+    }
+
+    function switchView(viewName) {
+      document.querySelectorAll('.app-view').forEach(sec => sec.classList.add('hidden'));
+      const target = document.getElementById('view-' + viewName);
+      if (target) {
+        target.classList.remove('hidden');
+        target.classList.add('animate-fade-up');
+      }
+      if (viewName === 'shop') renderShopCatalog();
+      if (viewName === 'collections') renderCollections();
+      if (viewName === 'offers') renderOffers();
+      if (viewName === 'checkout') renderCheckoutSummary();
+      if (viewName === 'track') renderOrderTracking();
+      if (viewName === 'dashboard') renderDashboard();
+      if (viewName === 'admin') renderAdminPanel();
+      if (viewName === 'ai-studio') {
+        populateTryonSelect();
+        updateTryonPreview();
+        generateOccasionOutfit('Wedding');
+        renderMixMatchStudio();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleMobileMenu(force) {
+      const menu = document.getElementById('mobileMenu');
+      if (typeof force === 'boolean') {
+        menu.classList.toggle('hidden', !force);
+      } else {
+        menu.classList.toggle('hidden');
+      }
+    }
+
+    function toggleCurrency() {
+      state.currency = state.currency === 'INR' ? 'USD' : 'INR';
+      document.getElementById('currencyToggleBtn').textContent = state.currency === 'INR' ? '₹ INR' : '$ USD';
+      document.getElementById('freeShipThreshold').textContent = formatPrice(9999);
+      renderAll();
+      showToast(`Currency switched to ${state.currency}`);
+    }
+
+    function createProductCardHTML(p) {
+      const disc = getDiscount(p.originalPrice, p.price);
+      const isWish = state.wishlist.includes(p.id);
+      return `
+        <div class="group bg-white rounded-3xl border border-champagne/80 overflow-hidden hover:shadow-xl hover:border-rosegold transition flex flex-col justify-between">
+          <div>
+            <div class="relative aspect-[3/4] overflow-hidden bg-cream">
+              <img src="${p.images[0]}" alt="${p.name}" onclick="openProductModal('${p.id}')" class="w-full h-full object-cover cursor-pointer group-hover:scale-105 transition duration-700" />
+              <div class="absolute top-3 left-3 flex flex-col gap-1.5">
+                ${disc > 0 ? `<span class="px-2.5 py-1 rounded-full bg-deepblack text-cream text-[10px] font-bold">-${disc}%</span>` : ''}
+                ${p.isNew ? `<span class="px-2.5 py-1 rounded-full bg-rosegold text-white text-[10px] font-bold uppercase">New</span>` : ''}
+              </div>
+              <button onclick="toggleWishlist('${p.id}')" class="absolute top-3 right-3 p-2.5 rounded-full bg-cream/90 hover:scale-110 transition shadow-sm" aria-label="Wishlist">
+                <span class="text-sm ${isWish ? 'text-rosegold' : 'text-deepblack'}">${isWish ? '♥' : '♡'}</span>
+              </button>
+              <div class="absolute inset-x-3 bottom-3 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition">
+                <button onclick="addToCart('${p.id}')" class="flex-1 py-2.5 rounded-full bg-deepblack text-cream text-[11px] font-bold uppercase tracking-wider hover:bg-rosegold transition">Add to Cart</button>
+                <button onclick="openProductModal('${p.id}')" class="px-3.5 py-2.5 rounded-full bg-cream text-deepblack text-[11px] font-bold hover:bg-champagne transition">Quick View</button>
+              </div>
+            </div>
+            <div class="p-4 space-y-1.5">
+              <div class="flex justify-between text-[10px] uppercase tracking-widest text-softbrown">
+                <span>${p.subCategory}</span>
+                <span class="font-bold text-deepblack">★ ${p.rating}</span>
+              </div>
+              <h3 onclick="openProductModal('${p.id}')" class="font-editorial text-lg font-bold leading-snug cursor-pointer hover:text-rosegold truncate">${p.name}</h3>
+              <div class="flex items-center justify-between pt-1">
+                <div class="flex gap-1.5">
+                  ${p.colors.map(c => `<span class="w-3.5 h-3.5 rounded-full border border-deepblack/20" style="background:${c.hex}" title="${c.name}"></span>`).join('')}
+                </div>
+                <span class="text-[10px] text-deepblack/60">${p.sizes.join(' · ')}</span>
+              </div>
+            </div>
+          </div>
+          <div class="px-4 pb-4 flex items-baseline gap-2">
+            <span class="text-sm font-bold">${formatPrice(p.price)}</span>
+            ${p.originalPrice > p.price ? `<span class="text-xs line-through text-deepblack/40">${formatPrice(p.originalPrice)}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHomeSections() {
+      document.getElementById('homeCategoriesGrid').innerHTML = CATEGORIES_INFO.map(c => `
+        <div class="group rounded-3xl overflow-hidden bg-white border border-champagne shadow-sm hover:shadow-xl transition">
+          <div class="relative h-64 overflow-hidden">
+            <img src="${c.img}" alt="${c.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-deepblack/80 via-transparent to-transparent"></div>
+            <div class="absolute bottom-4 left-4 right-4 text-cream">
+              <h3 class="font-editorial text-3xl font-bold">${c.name}</h3>
+              <p class="text-[11px] text-champagne">${c.sub}</p>
+            </div>
+          </div>
+          <div class="p-4">
+            <button onclick="filterByDepartment('${c.name}')" class="w-full py-2.5 rounded-full bg-deepblack text-cream text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">
+              Shop Category
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('homeNewArrivalsGrid').innerHTML = PRODUCTS.filter(p => p.isNew).slice(0, 4).map(createProductCardHTML).join('');
+      document.getElementById('homeTrendingGrid').innerHTML = PRODUCTS.filter(p => p.isTrending).slice(0, 4).map(createProductCardHTML).join('');
+      document.getElementById('homeBestSellersGrid').innerHTML = PRODUCTS.filter(p => p.isBestSeller).slice(0, 4).map(createProductCardHTML).join('');
+    }
+
+    function filterByDepartment(dept) {
+      state.filters.category = dept;
+      state.filters.collection = 'All';
+      syncFilterUI();
+      switchView('shop');
+    }
+
+    function handleSearchInput(val) {
+      state.filters.search = val.trim().toLowerCase();
+      document.getElementById('headerSearchInput').value = val;
+      document.getElementById('shopSearchInput').value = val;
+      if (document.getElementById('view-shop').classList.contains('hidden') && val.trim().length > 0) {
+        switchView('shop');
+      } else {
+        renderShopCatalog();
+      }
+    }
+
+    function setFilterState(key, value) {
+      state.filters[key] = value;
+      syncFilterUI();
+      renderShopCatalog();
+    }
+
+    function resetAllFilters() {
+      state.filters = { search: '', category: 'All', collection: 'All', maxPrice: 50000, fabric: 'All', size: 'All', color: 'All', discount: 0, rating: 0 };
+      document.getElementById('headerSearchInput').value = '';
+      document.getElementById('shopSearchInput').value = '';
+      document.getElementById('sortSelect').value = 'popular';
+      syncFilterUI();
+      renderShopCatalog();
+    }
+
+    function syncFilterUI() {
+      document.getElementById('maxPriceRange').value = state.filters.maxPrice;
+      document.getElementById('maxPriceLabel').textContent = formatPrice(state.filters.maxPrice);
+      document.getElementById('filterFabric').value = state.filters.fabric;
+      document.getElementById('filterSize').value = state.filters.size;
+      document.getElementById('filterColor').value = state.filters.color;
+      document.getElementById('filterDiscount').value = state.filters.discount;
+      document.getElementById('filterRating').value = state.filters.rating;
+
+      document.querySelectorAll('.f-cat').forEach(btn => {
+        const active = btn.dataset.val === state.filters.category;
+        btn.className = `f-cat px-3 py-1.5 rounded-full text-xs ${active ? 'bg-deepblack text-white font-semibold' : 'bg-cream border border-champagne'}`;
+      });
+    }
+
+    function renderShopCatalog() {
+      const f = state.filters;
+      let list = PRODUCTS.filter(p => {
+        if (f.category !== 'All' && p.category !== f.category) return false;
+        if (f.collection !== 'All' && p.collection !== f.collection) return false;
+        if (p.price > f.maxPrice) return false;
+        if (f.fabric !== 'All' && p.fabric !== f.fabric) return false;
+        if (f.size !== 'All' && !p.sizes.includes(f.size)) return false;
+        if (f.color !== 'All' && !p.colors.some(c => c.name.toLowerCase().includes(f.color.toLowerCase()))) return false;
+        if (getDiscount(p.originalPrice, p.price) < f.discount) return false;
+        if (p.rating < f.rating) return false;
+        if (f.search) {
+          const hay = `${p.name} ${p.brand} ${p.category} ${p.subCategory} ${p.fabric} ${p.collection}`.toLowerCase();
+          if (!hay.includes(f.search)) return false;
+        }
+        return true;
+      });
+
+      const sortVal = document.getElementById('sortSelect').value;
+      if (sortVal === 'price-low') list.sort((a, b) => a.price - b.price);
+      else if (sortVal === 'price-high') list.sort((a, b) => b.price - a.price);
+      else if (sortVal === 'rating') list.sort((a, b) => b.rating - a.rating);
+      else if (sortVal === 'newest') list.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+      else if (sortVal === 'bestseller') list.sort((a, b) => (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0));
+
+      document.getElementById('shopBreadcrumb').textContent = `${f.category}${f.collection !== 'All' ? ' • ' + f.collection : ''}`;
+      document.getElementById('shopCountLabel').textContent = `(${list.length} items)`;
+      document.getElementById('shopProductsGrid').innerHTML = list.length
+        ? list.map(createProductCardHTML).join('')
+        : `<div class="col-span-full bg-white p-12 rounded-3xl border border-champagne text-center space-y-3"><p class="font-editorial text-2xl">No matching pieces found</p><button onclick="resetAllFilters()" class="px-6 py-2.5 rounded-full bg-deepblack text-white text-xs font-bold">Reset Filters</button></div>`;
+    }
+
+    function renderCollections() {
+      document.getElementById('collectionsGrid').innerHTML = COLLECTIONS_LIST.map(col => `
+        <div class="group relative h-80 rounded-3xl overflow-hidden border border-champagne shadow-md">
+          <img src="${col.img}" alt="${col.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-deepblack/85 via-deepblack/30 to-transparent"></div>
+          <div class="absolute bottom-6 left-6 right-6 text-cream space-y-2">
+            <h3 class="font-editorial text-3xl font-bold">${col.name}</h3>
+            <p class="text-xs text-champagne/85">${col.desc}</p>
+            <button onclick="state.filters.collection='${col.name}'; state.filters.category='All'; switchView('shop');" class="mt-2 px-5 py-2.5 rounded-full bg-cream text-deepblack text-xs font-bold uppercase tracking-wider hover:bg-rosegold hover:text-white transition">
+              Explore Collection
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderOffers() {
+      document.getElementById('offersCouponsGrid').innerHTML = COUPONS.map(c => `
+        <div class="p-6 rounded-3xl bg-white border-2 border-dashed border-rosegold flex flex-col justify-between space-y-4">
+          <div>
+            <span class="text-[10px] uppercase tracking-widest text-softbrown font-bold">Coupon Code</span>
+            <h3 class="font-editorial text-3xl font-bold mt-1">${c.code}</h3>
+            <p class="text-xs text-deepblack/75 mt-1">${c.desc}</p>
+          </div>
+          <button onclick="applyCouponCode('${c.code}'); toggleCartDrawer(true);" class="w-full py-2.5 rounded-full bg-deepblack text-cream text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">
+            Apply in Bag
+          </button>
+        </div>
+      `).join('');
+      document.getElementById('offersProductsGrid').innerHTML = PRODUCTS.filter(p => getDiscount(p.originalPrice, p.price) >= 18).map(createProductCardHTML).join('');
+    }
+
+    // =====================================================================
+    // PRODUCT DETAIL MODAL WITH ZOOM, SMART SIZE & REVIEWS
+    // =====================================================================
+    function openProductModal(productId) {
+      const p = PRODUCTS.find(x => x.id === productId);
+      if (!p) return;
+      if (!state.recentlyViewed.includes(p.id)) {
+        state.recentlyViewed.unshift(p.id);
+        state.recentlyViewed = state.recentlyViewed.slice(0, 6);
+      }
+      const similar = PRODUCTS.filter(x => x.id !== p.id && x.category === p.category).slice(0, 3);
+      const pReviews = state.reviews[p.id] || [{ author: 'Patron', rating: 5, text: 'Exquisite luxury craftsmanship.' }];
+
+      document.getElementById('productDetailBody').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="space-y-3">
+            <div class="zoom-container aspect-[4/5] rounded-2xl border border-champagne bg-white relative"
+                 onmousemove="const r=this.getBoundingClientRect(); const img=this.querySelector('img'); img.style.transformOrigin=((event.clientX-r.left)/r.width*100)+'% '+((event.clientY-r.top)/r.height*100)+'%'; img.style.transform='scale(1.8)';"
+                 onmouseleave="this.querySelector('img').style.transform='scale(1)';">
+              <img id="modalMainImg" src="${p.images[0]}" alt="${p.name}" class="w-full h-full object-cover" />
+            </div>
+            <p class="text-[11px] text-softbrown">Hover over image to zoom weave • Fabric: <strong>${p.fabric}</strong> • Stock: <strong>${p.stock} available</strong></p>
+          </div>
+
+          <div class="space-y-4">
+            <span class="text-xs uppercase tracking-widest text-softbrown font-bold">${p.brand} • ${p.collection}</span>
+            <h2 class="font-editorial text-3xl sm:text-4xl font-bold">${p.name}</h2>
+            <div class="flex items-baseline gap-3">
+              <span class="text-2xl font-bold">${formatPrice(p.price)}</span>
+              ${p.originalPrice > p.price ? `<span class="text-sm line-through text-deepblack/40">${formatPrice(p.originalPrice)}</span>` : ''}
+              <span class="text-xs font-bold text-rosegold">★ ${p.rating} (${p.reviews} reviews)</span>
+            </div>
+            <p class="text-sm text-deepblack/80 leading-relaxed">${p.description}</p>
+
+            <div>
+              <label class="text-xs font-bold uppercase block mb-1.5">Size</label>
+              <div id="modalSizeGroup" class="flex flex-wrap gap-2">
+                ${p.sizes.map((s, idx) => `<button type="button" onclick="selectModalSize(this)" data-size="${s}" class="m-sz px-4 py-2 rounded-full text-xs font-bold border ${idx === 0 ? 'bg-deepblack text-white border-deepblack' : 'bg-white border-champagne'}">${s}</button>`).join('')}
+              </div>
+            </div>
+
+            <!-- Smart Size Recommendation -->
+            <div class="p-3.5 rounded-2xl bg-white border border-champagne space-y-2">
+              <p class="text-[11px] font-bold uppercase text-softbrown">Smart Size Recommendation</p>
+              <div class="flex gap-2">
+                <input id="smartHeightInput" type="number" value="168" placeholder="Height cm" class="w-1/2 px-3 py-1.5 rounded-xl border border-champagne bg-cream text-xs" />
+                <input id="smartWeightInput" type="number" value="58" placeholder="Weight kg" class="w-1/2 px-3 py-1.5 rounded-xl border border-champagne bg-cream text-xs" />
+                <button type="button" onclick="calcSmartSize('${p.id}')" class="px-4 py-1.5 rounded-full bg-rosegold text-white text-xs font-bold">Fit</button>
+              </div>
+              <p id="smartSizeResult" class="text-xs font-semibold text-softbrown"></p>
+            </div>
+
+            <!-- Delivery PIN Estimator -->
+            <div class="flex gap-2">
+              <input id="modalPinInput" type="text" maxlength="6" placeholder="Enter PIN code for delivery estimate" class="flex-1 px-4 py-2.5 rounded-full border border-champagne bg-white text-xs" />
+              <button type="button" onclick="checkPinEstimate()" class="px-4 py-2.5 rounded-full border border-deepblack text-xs font-bold">Estimate</button>
+            </div>
+            <p id="modalPinResult" class="text-xs text-softbrown font-medium"></p>
+
+            <div class="flex gap-3 pt-2">
+              <button onclick="addModalProductToCart('${p.id}')" class="flex-1 py-3.5 rounded-full bg-deepblack text-cream text-xs font-bold uppercase tracking-widest hover:bg-rosegold transition">Add to Cart</button>
+              <button onclick="toggleWishlist('${p.id}')" class="px-5 py-3.5 rounded-full border border-champagne bg-white text-xs font-bold">♥ Wishlist</button>
+            </div>
+
+            <!-- Reviews -->
+            <div class="pt-4 border-t border-champagne space-y-2">
+              <h3 class="font-editorial text-xl font-bold">Customer Reviews</h3>
+              ${pReviews.map(r => `<p class="text-xs bg-white p-3 rounded-xl border border-champagne"><strong>${r.author}</strong> (★${r.rating}): ${r.text}</p>`).join('')}
+            </div>
+
+            <!-- Similar Products -->
+            <div class="pt-4 border-t border-champagne">
+              <h3 class="font-editorial text-xl font-bold mb-2">Similar Recommendations</h3>
+              <div class="grid grid-cols-3 gap-2.5">
+                ${similar.map(s => `
+                  <div onclick="openProductModal('${s.id}')" class="bg-white p-2 rounded-xl border border-champagne cursor-pointer">
+                    <img src="${s.images[0]}" class="w-full h-24 object-cover rounded-lg mb-1" />
+                    <p class="text-[11px] font-bold truncate">${s.name}</p>
+                    <p class="text-[10px] text-softbrown">${formatPrice(s.price)}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const modal = document.getElementById('productDetailModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeProductModal() {
+      const modal = document.getElementById('productDetailModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function selectModalSize(btn) {
+      document.querySelectorAll('.m-sz').forEach(b => b.className = 'm-sz px-4 py-2 rounded-full text-xs font-bold border bg-white border-champagne');
+      btn.className = 'm-sz px-4 py-2 rounded-full text-xs font-bold border bg-deepblack text-white border-deepblack';
+    }
+
+    function calcSmartSize(pid) {
+      const p = PRODUCTS.find(x => x.id === pid);
+      const h = Number(document.getElementById('smartHeightInput').value) || 168;
+      const w = Number(document.getElementById('smartWeightInput').value) || 60;
+      const bmi = w / ((h / 100) ** 2);
+      let rec = p.sizes[0];
+      if (p.sizes.includes('M')) {
+        rec = bmi < 19.5 ? 'XS' : bmi < 22.5 ? 'S' : bmi < 25.5 ? 'M' : (p.sizes.includes('L') ? 'L' : p.sizes[p.sizes.length - 1]);
+      }
+      document.getElementById('smartSizeResult').textContent = `Recommended Size: ${rec}`;
+      const matchBtn = Array.from(document.querySelectorAll('.m-sz')).find(b => b.dataset.size === rec);
+      if (matchBtn) selectModalSize(matchBtn);
+    }
+
+    function checkPinEstimate() {
+      const pin = document.getElementById('modalPinInput').value.trim();
+      document.getElementById('modalPinResult').textContent = pin.length === 6
+        ? `Estimated delivery to PIN ${pin} in 2–4 business days.`
+        : 'Please enter a valid 6-digit PIN code.';
+    }
+
+    function addModalProductToCart(pid) {
+      const activeSz = document.querySelector('.m-sz.bg-deepblack')?.dataset.size;
+      addToCart(pid, activeSz);
+      closeProductModal();
+    }
+
+    // =====================================================================
+    // CART & WISHLIST FUNCTIONS
+    // =====================================================================
+    function addToCart(pid, chosenSize = null) {
+      const p = PRODUCTS.find(x => x.id === pid);
+      if (!p) return;
+      const size = chosenSize || p.sizes[0];
+      const color = p.colors[0].name;
+      const cartId = `${p.id}-${size}-${color}`;
+      const existing = state.cart.find(item => item.cartId === cartId);
+      if (existing) existing.qty += 1;
+      else state.cart.push({ cartId, id: p.id, name: p.name, price: p.price, size, color, qty: 1, image: p.images[0] });
+      renderCart();
+      showToast(`Added "${p.name}" (${size}) to Shopping Bag`);
+    }
+
+    function updateCartQty(cartId, delta) {
+      state.cart = state.cart.map(item => item.cartId === cartId ? { ...item, qty: item.qty + delta } : item).filter(item => item.qty > 0);
+      renderCart();
+    }
+
+    function removeCartItem(cartId) {
+      state.cart = state.cart.filter(item => item.cartId !== cartId);
+      renderCart();
+    }
+
+    function applyCouponCode(rawCode) {
+      const code = (rawCode || '').trim().toUpperCase();
+      const subtotal = state.cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const found = COUPONS.find(c => c.code === code);
+      if (!found) return showToast('Invalid coupon code');
+      if (subtotal < found.min) return showToast(`Minimum order ${formatPrice(found.min)} required for ${code}`);
+      state.appliedCoupon = found;
+      renderCart();
+      renderCheckoutSummary();
+      showToast(`Coupon ${code} applied!`);
+    }
+
+    function getCartPricing() {
+      const subtotal = state.cart.reduce((s, i) => s + i.price * i.qty, 0);
+      let discount = 0;
+      if (state.appliedCoupon && subtotal >= state.appliedCoupon.min) {
+        discount = state.appliedCoupon.type === 'percent' ? Math.round((subtotal * state.appliedCoupon.value) / 100) : state.appliedCoupon.value;
+      }
+      const delivery = subtotal === 0 ? 0 : ((subtotal - discount) >= 9999 ? 0 : 250);
+      const total = Math.max(0, subtotal - discount + delivery);
+      return { subtotal, discount, delivery, total };
+    }
+
+    function renderCart() {
+      const totalQty = state.cart.reduce((s, i) => s + i.qty, 0);
+      document.getElementById('cartBadge').textContent = totalQty;
+      document.getElementById('cartSubtitle').textContent = `${totalQty} item(s)`;
+
+      document.getElementById('cartItemsContainer').innerHTML = state.cart.length
+        ? state.cart.map(item => `
+          <div class="flex gap-3 bg-white p-3 rounded-2xl border border-champagne">
+            <img src="${item.image}" class="w-16 h-20 object-cover rounded-xl" />
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold truncate">${item.name}</p>
+              <p class="text-[11px] text-softbrown">Size: ${item.size} • ${item.color}</p>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex items-center border border-champagne rounded-full px-2">
+                  <button onclick="updateCartQty('${item.cartId}', -1)" class="px-1.5 text-xs">−</button>
+                  <span class="px-2 text-xs font-bold">${item.qty}</span>
+                  <button onclick="updateCartQty('${item.cartId}', 1)" class="px-1.5 text-xs">+</button>
+                </div>
+                <span class="text-xs font-bold">${formatPrice(item.price * item.qty)}</span>
+                <button onclick="removeCartItem('${item.cartId}')" class="text-[11px] text-red-600">Remove</button>
+              </div>
+            </div>
+          </div>
+        `).join('')
+        : `<p class="text-xs text-center text-deepblack/60 py-10">Your shopping bag is empty.</p>`;
+
+      const pr = getCartPricing();
+      document.getElementById('cartTotalsSummary').innerHTML = `
+        <div class="flex justify-between"><span>Subtotal</span><span>${formatPrice(pr.subtotal)}</span></div>
+        ${pr.discount > 0 ? `<div class="flex justify-between text-emerald-800 font-semibold"><span>Discount (${state.appliedCoupon.code})</span><span>−${formatPrice(pr.discount)}</span></div>` : ''}
+        <div class="flex justify-between"><span>Delivery</span><span>${pr.delivery === 0 ? 'FREE' : formatPrice(pr.delivery)}</span></div>
+        <div class="flex justify-between text-sm font-bold pt-2 border-t border-champagne"><span>Total</span><span>${formatPrice(pr.total)}</span></div>
+      `;
+    }
+
+    function toggleCartDrawer(open) {
+      const el = document.getElementById('cartDrawer');
+      el.classList.toggle('hidden', !open);
+      el.classList.toggle('flex', open);
+    }
+
+    function toggleWishlist(pid) {
+      const idx = state.wishlist.indexOf(pid);
+      if (idx >= 0) {
+        state.wishlist.splice(idx, 1);
+        showToast('Removed from Wishlist');
+      } else {
+        state.wishlist.push(pid);
+        showToast('Saved to Wishlist with Price-Drop Alerts');
+      }
+      renderWishlist();
+      renderAll();
+    }
+
+    function toggleWishlistDrawer(open) {
+      renderWishlist();
+      const el = document.getElementById('wishlistDrawer');
+      el.classList.toggle('hidden', !open);
+      el.classList.toggle('flex', open);
+    }
+
+    function renderWishlist() {
+      document.getElementById('wishlistBadge').textContent = state.wishlist.length;
+      const items = PRODUCTS.filter(p => state.wishlist.includes(p.id));
+      document.getElementById('wishlistItemsContainer').innerHTML = items.length
+        ? items.map(p => `
+          <div class="flex gap-3 bg-white p-3 rounded-2xl border border-champagne">
+            <img src="${p.images[0]}" class="w-16 h-20 object-cover rounded-xl" />
+            <div class="flex-1 min-w-0">
+              ${p.priceDrop ? `<span class="text-[10px] font-bold text-emerald-800">● Price Drop Alert</span>` : ''}
+              <p class="text-xs font-bold truncate">${p.name}</p>
+              <p class="text-xs font-bold text-softbrown">${formatPrice(p.price)}</p>
+              <div class="flex gap-2 mt-2">
+                <button onclick="addToCart('${p.id}'); toggleWishlistDrawer(false); toggleCartDrawer(true);" class="px-3 py-1 rounded-full bg-deepblack text-white text-[10px] font-bold">Move to Cart</button>
+                <button onclick="toggleWishlist('${p.id}')" class="text-[10px] text-red-600">Remove</button>
+              </div>
+            </div>
+          </div>
+        `).join('')
+        : `<p class="text-xs text-center text-deepblack/60 py-10">No saved items in your wishlist.</p>`;
+    }
+
+    function proceedToCheckout() {
+      if (!state.cart.length) return showToast('Add items to your bag before checkout');
+      toggleCartDrawer(false);
+      switchView('checkout');
+    }
+
+    // =====================================================================
+    // AI STUDIO FUNCTIONS
+    // =====================================================================
+    function switchAiTab(tab) {
+      document.querySelectorAll('.ai-tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('ai-tab-' + tab).classList.remove('hidden');
+      document.querySelectorAll('.ai-tab-btn').forEach(b => {
+        const active = b.dataset.aitab === tab;
+        b.className = `ai-tab-btn px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider ${active ? 'bg-deepblack text-white' : 'bg-white border border-champagne'}`;
+      });
+    }
+
+    function generateStylistRecommendation() {
+      const occ = document.getElementById('stylistOccasion').value;
+      const sty = document.getElementById('stylistStyle').value;
+      const bud = Number(document.getElementById('stylistBudget').value) || 30000;
+      const col = document.getElementById('stylistColor').value;
+      const matches = PRODUCTS.filter(p => p.price <= bud).slice(0, 3);
+
+      document.getElementById('stylistOutput').textContent =
+        `For a ${occ} in a ${sty} aesthetic with ${col} tones within ${formatPrice(bud)}, pair ${matches.map(m => m.name).join(', ')}.`;
+
+      document.getElementById('stylistSuggestedCards').innerHTML = matches.map(m => `
+        <div onclick="openProductModal('${m.id}')" class="bg-white p-2 rounded-xl border border-champagne cursor-pointer">
+          <img src="${m.images[0]}" class="w-full h-20 object-cover rounded-lg mb-1" />
+          <p class="text-[10px] font-bold truncate">${m.name}</p>
+          <p class="text-[10px] text-softbrown">${formatPrice(m.price)}</p>
+        </div>
+      `).join('');
+    }
+
+    function handleTryonConsentChange() {
+      document.getElementById('tryonPhotoInput').disabled = !document.getElementById('tryonConsent').checked;
+    }
+
+    function handleTryonPhotoUpload(ev) {
+      const file = ev.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        document.getElementById('tryonUserImg').src = reader.result;
+        showToast('Photo preview loaded locally');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function populateTryonSelect() {
+      document.getElementById('tryonProductSelect').innerHTML = PRODUCTS.map(p => `<option value="${p.id}">${p.name} (${formatPrice(p.price)})</option>`).join('');
+    }
+
+    function updateTryonPreview() {
+      const pid = document.getElementById('tryonProductSelect').value || PRODUCTS[0].id;
+      const p = PRODUCTS.find(x => x.id === pid);
+      document.getElementById('tryonGarmentThumb').src = p.images[0];
+      document.getElementById('tryonGarmentName').textContent = p.name;
+      document.getElementById('tryonGarmentPrice').textContent = formatPrice(p.price);
+    }
+
+    function addTryonItemToCart() {
+      addToCart(document.getElementById('tryonProductSelect').value);
+    }
+
+    function generateOccasionOutfit(occ) {
+      const picks = occ === 'Wedding' ? [PRODUCTS[1], PRODUCTS[12], PRODUCTS[14], PRODUCTS[15]]
+        : occ === 'Office' ? [PRODUCTS[4], PRODUCTS[5], PRODUCTS[12], PRODUCTS[13]]
+        : occ === 'Party' ? [PRODUCTS[0], PRODUCTS[12], PRODUCTS[14], PRODUCTS[15]]
+        : [PRODUCTS[7], PRODUCTS[8], PRODUCTS[13], PRODUCTS[14]];
+
+      document.getElementById('generatedOutfitGrid').innerHTML = picks.map(p => `
+        <div class="bg-cream p-4 rounded-3xl border border-champagne space-y-2">
+          <img src="${p.images[0]}" onclick="openProductModal('${p.id}')" class="w-full aspect-[3/4] object-cover rounded-2xl cursor-pointer" />
+          <h3 class="font-editorial text-lg font-bold truncate">${p.name}</h3>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold">${formatPrice(p.price)}</span>
+            <button onclick="addToCart('${p.id}')" class="px-3 py-1 rounded-full bg-deepblack text-white text-[10px] font-bold">+ Bag</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderMixMatchStudio() {
+      const groups = [
+        { label: 'Top / Gown', items: [PRODUCTS[0], PRODUCTS[4], PRODUCTS[7], PRODUCTS[8]] },
+        { label: 'Bottom / Saree', items: [PRODUCTS[1], PRODUCTS[5], PRODUCTS[3], PRODUCTS[6]] },
+        { label: 'Footwear', items: [PRODUCTS[14], PRODUCTS[9], PRODUCTS[10], PRODUCTS[11]] },
+        { label: 'Accessory', items: [PRODUCTS[12], PRODUCTS[13], PRODUCTS[15], PRODUCTS[2]] }
+      ];
+
+      document.getElementById('mixMatchSlots').innerHTML = groups.map((g, idx) => {
+        const cur = g.items[state.mixIndices[idx] % g.items.length];
+        return `
+          <div class="bg-cream p-4 rounded-3xl border border-champagne space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase text-softbrown">${g.label}</span>
+              <button onclick="state.mixIndices[${idx}]++; renderMixMatchStudio();" class="px-2.5 py-1 rounded-full bg-white border border-champagne text-[10px] font-bold">Cycle ↻</button>
+            </div>
+            <img src="${cur.images[0]}" class="w-full aspect-[3/4] object-cover rounded-2xl" />
+            <p class="font-editorial text-lg font-bold truncate">${cur.name}</p>
+            <p class="text-xs font-bold text-softbrown">${formatPrice(cur.price)}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addMixMatchBundleToCart() {
+      const groups = [
+        [PRODUCTS[0], PRODUCTS[4], PRODUCTS[7], PRODUCTS[8]],
+        [PRODUCTS[1], PRODUCTS[5], PRODUCTS[3], PRODUCTS[6]],
+        [PRODUCTS[14], PRODUCTS[9], PRODUCTS[10], PRODUCTS[11]],
+        [PRODUCTS[12], PRODUCTS[13], PRODUCTS[15], PRODUCTS[2]]
+      ];
+      groups.forEach((g, idx) => addToCart(g[state.mixIndices[idx] % g.length].id));
+    }
+
+    function setGiftCardAmount(amt) {
+      state.giftAmount = amt;
+      updateGiftCardPreview();
+    }
+
+    function updateGiftCardPreview() {
+      document.getElementById('giftCardPreviewAmount').textContent = formatPrice(state.giftAmount);
+      document.getElementById('giftCardPreviewMsg').textContent = `"${document.getElementById('giftMsgInput').value}"`;
+      const to = document.getElementById('giftToInput').value.trim();
+      document.getElementById('giftCardPreviewTo').textContent = to ? `Prepared for ${to}` : '';
+    }
+
+    function addGiftCardToCart() {
+      const to = document.getElementById('giftToInput').value.trim() || 'Gift Recipient';
+      const cartId = `gift-${state.giftAmount}-${to}`;
+      state.cart.push({
+        cartId, id: 'gift', name: `VOGUEVA Gift Card (${to})`, price: state.giftAmount,
+        size: 'Digital', color: 'Rose Gold', qty: 1,
+        image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80'
+      });
+      renderCart();
+      showToast('Gift Card added to Shopping Bag');
+    }
+
+    // =====================================================================
+    // CHECKOUT, ORDER TRACKING, DASHBOARD & ADMIN
+    // =====================================================================
+    function selectPaymentMethod(method) {
+      state.paymentMethod = method;
+      document.querySelectorAll('.pay-opt').forEach(b => {
+        const active = b.textContent === method || (method === 'Cash on Delivery' && b.textContent === 'COD');
+        b.className = `pay-opt py-2.5 px-3 rounded-full text-xs font-bold ${active ? 'bg-deepblack text-white' : 'bg-cream border border-champagne'}`;
+      });
+    }
+
+    function renderCheckoutSummary() {
+      document.getElementById('chkName').value = state.user.name;
+      document.getElementById('chkEmail').value = state.user.email;
+      document.getElementById('checkoutItemsList').innerHTML = state.cart.map(i => `
+        <div class="flex justify-between"><span>${i.name} (${i.size} × ${i.qty})</span><strong>${formatPrice(i.price * i.qty)}</strong></div>
+      `).join('');
+      const pr = getCartPricing();
+      document.getElementById('checkoutTotalsBox').innerHTML = `
+        <div class="flex justify-between"><span>Subtotal</span><span>${formatPrice(pr.subtotal)}</span></div>
+        <div class="flex justify-between"><span>Coupon Discount</span><span>−${formatPrice(pr.discount)}</span></div>
+        <div class="flex justify-between"><span>Delivery</span><span>${pr.delivery === 0 ? 'FREE' : formatPrice(pr.delivery)}</span></div>
+        <div class="flex justify-between text-sm font-bold pt-2 border-t border-champagne"><span>Total Payable</span><span>${formatPrice(pr.total)}</span></div>
+      `;
+    }
+
+    function submitCheckoutOrder(ev) {
+      ev.preventDefault();
+      if (!state.cart.length) return showToast('Your bag is empty');
+      const pr = getCartPricing();
+      const orderId = 'VGV-2026-' + Math.floor(1000 + Math.random() * 9000);
+      const customer = document.getElementById('chkName').value.trim();
+      const address = `${document.getElementById('chkAddress').value.trim()}, ${document.getElementById('chkCity').value.trim()} - ${document.getElementById('chkPin').value.trim()}`;
+
+      state.orders.unshift({
+        id: orderId,
+        date: new Date().toISOString().slice(0, 10),
+        status: 'Order Confirmed',
+        eta: '2026-11-27',
+        customer,
+        address,
+        payment: state.paymentMethod,
+        total: pr.total,
+        returnRequested: false,
+        items: [...state.cart]
+      });
+
+      state.user.points += Math.round(pr.total / 20);
+      state.cart = [];
+      state.appliedCoupon = null;
+      renderCart();
+
+      document.getElementById('checkoutForm').classList.add('hidden');
+      const conf = document.getElementById('orderConfirmationBox');
+      conf.classList.remove('hidden');
+      document.getElementById('confirmedOrderDetails').textContent =
+        `Order ID: ${orderId} • Total Paid: ${formatPrice(pr.total)} via ${state.paymentMethod}.`;
+      showToast(`Order ${orderId} confirmed!`);
+    }
+
+    function renderOrderTracking() {
+      const sel = document.getElementById('trackOrderSelector');
+      sel.innerHTML = state.orders.map(o => `<option value="${o.id}">${o.id} — ${o.status}</option>`).join('');
+      const ord = state.orders.find(o => o.id === sel.value) || state.orders[0];
+      const stages = ['Order Placed', 'Order Confirmed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
+      const curIdx = stages.indexOf(ord.status);
+
+      document.getElementById('orderTrackingCard').innerHTML = `
+        <div class="flex flex-wrap justify-between gap-4 pb-4 border-b border-champagne">
+          <div><span class="text-xs text-softbrown">Order ID</span><h2 class="font-editorial text-3xl font-bold">${ord.id}</h2></div>
+          <div><span class="text-xs text-softbrown">Estimated Delivery</span><p class="text-sm font-bold">${ord.eta}</p></div>
+          <div><span class="text-xs text-softbrown">Status</span><p class="text-sm font-bold text-rosegold">${ord.status}</p></div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
+          ${stages.map((st, i) => `
+            <div class="p-3 rounded-2xl border text-center ${i <= curIdx && ord.status !== 'Cancelled' ? 'bg-deepblack text-cream border-deepblack' : 'bg-cream border-champagne opacity-60'}">
+              <p class="text-[11px] font-bold">${st}</p>
+            </div>
+          `).join('')}
+        </div>
+        <div class="flex flex-wrap gap-3 pt-2">
+          ${ord.status !== 'Delivered' && ord.status !== 'Cancelled' ? `<button onclick="cancelTrackedOrder('${ord.id}')" class="px-5 py-2.5 rounded-full border border-red-300 text-red-700 text-xs font-bold">Cancel Order</button>` : ''}
+          ${!ord.returnRequested && ord.status !== 'Cancelled' ? `<button onclick="requestTrackedReturn('${ord.id}')" class="px-5 py-2.5 rounded-full bg-deepblack text-white text-xs font-bold">Request Return</button>` : ''}
+        </div>
+      `;
+    }
+
+    function cancelTrackedOrder(oid) {
+      const o = state.orders.find(x => x.id === oid);
+      if (o) o.status = 'Cancelled';
+      renderOrderTracking();
+      showToast(`Order ${oid} cancelled`);
+    }
+
+    function requestTrackedReturn(oid) {
+      const o = state.orders.find(x => x.id === oid);
+      if (o) o.returnRequested = true;
+      renderOrderTracking();
+      showToast(`Return requested for ${oid}`);
+    }
+
+    function renderDashboard() {
+      const pts = state.user.points;
+      const tier = pts >= 5000 ? 'Platinum Tier' : pts >= 2000 ? 'Gold Tier' : 'Silver Tier';
+      document.getElementById('dashTierBadge').textContent = tier;
+      document.getElementById('dashUserName').textContent = state.user.name;
+      document.getElementById('dashPointsValue').textContent = `${pts.toLocaleString()} pts`;
+
+      const recent = state.recentlyViewed.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+      document.getElementById('dashboardContentGrid').innerHTML = `
+        <div class="bg-white p-6 rounded-3xl border border-champagne space-y-3">
+          <h2 class="font-editorial text-2xl font-bold">Recent Orders (${state.orders.length})</h2>
+          ${state.orders.map(o => `<div class="p-3 rounded-2xl bg-cream border border-champagne text-xs"><strong>${o.id}</strong> • ${o.status} • ${formatPrice(o.total)}</div>`).join('')}
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-champagne space-y-3">
+          <h2 class="font-editorial text-2xl font-bold">Recently Viewed</h2>
+          ${recent.map(p => `<div onclick="openProductModal('${p.id}')" class="flex items-center gap-3 p-2 rounded-2xl bg-cream border border-champagne cursor-pointer text-xs"><img src="${p.images[0]}" class="w-10 h-12 object-cover rounded-lg" /><span class="font-bold truncate">${p.name}</span></div>`).join('')}
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-champagne space-y-3">
+          <h2 class="font-editorial text-2xl font-bold">Active Coupons</h2>
+          ${COUPONS.map(c => `<div class="p-3 rounded-2xl bg-cream border border-champagne text-xs"><strong>${c.code}</strong> — ${c.desc}</div>`).join('')}
+        </div>
+      `;
+    }
+
+    function redeemLoyaltyPoints() {
+      if (state.user.points < 500) return showToast('Minimum 500 points required');
+      state.user.points -= 500;
+      renderDashboard();
+      showToast('Redeemed 500 loyalty points for privilege credit!');
+    }
+
+    function renderAdminPanel() {
+      const rev = state.orders.reduce((s, o) => s + (o.status !== 'Cancelled' ? o.total : 0), 0) + 450000;
+      document.getElementById('adminKpis').innerHTML = `
+        <span class="px-4 py-2 rounded-full bg-white border border-champagne">Revenue: ${formatPrice(rev)}</span>
+        <span class="px-4 py-2 rounded-full bg-white border border-champagne">Products: ${PRODUCTS.length}</span>
+        <span class="px-4 py-2 rounded-full bg-white border border-champagne">Orders: ${state.orders.length}</span>
+      `;
+
+      document.getElementById('adminProductsList').innerHTML = PRODUCTS.map(p => `
+        <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-cream border border-champagne text-xs">
+          <div class="min-w-0"><strong>${p.name}</strong> <span class="text-softbrown">(${p.category} • Stock: ${p.stock})</span></div>
+          <div class="flex gap-2 shrink-0">
+            <button onclick="adminRestock('${p.id}')" class="px-3 py-1 rounded-full bg-white border border-champagne font-bold">+5 Stock</button>
+            <button onclick="adminDeleteProduct('${p.id}')" class="px-3 py-1 rounded-full text-red-700 font-bold">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('adminOrdersList').innerHTML = state.orders.map(o => `
+        <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-cream border border-champagne text-xs">
+          <div><strong>${o.id}</strong> — ${o.customer} (${formatPrice(o.total)})</div>
+          <select onchange="adminUpdateOrderStatus('${o.id}', this.value)" class="px-3 py-1.5 rounded-full bg-white border border-champagne font-bold">
+            ${['Order Placed', 'Order Confirmed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(st => `<option ${o.status === st ? 'selected' : ''}>${st}</option>`).join('')}
+          </select>
+        </div>
+      `).join('');
+    }
+
+    function adminAddProduct(ev) {
+      ev.preventDefault();
+      PRODUCTS.unshift({
+        id: 'p-' + Date.now(),
+        name: document.getElementById('admProdName').value.trim(),
+        brand: 'VOGUEVA ATELIER',
+        category: document.getElementById('admProdCat').value,
+        subCategory: document.getElementById('admProdSub').value.trim() || 'Couture',
+        collection: 'Luxury Collection',
+        originalPrice: Number(document.getElementById('admProdOrig').value) || 20000,
+        price: Number(document.getElementById('admProdPrice').value) || 15000,
+        sizes: ['S', 'M', 'L'],
+        colors: [{ name: 'Champagne', hex: '#E8D7C3' }, { name: 'Rose Gold', hex: '#C58D78' }],
+        fabric: document.getElementById('admProdFabric').value,
+        rating: 5.0, reviews: 1,
+        stock: Number(document.getElementById('admProdStock').value) || 10,
+        isNew: true, isTrending: true, isBestSeller: false, priceDrop: false,
+        images: [document.getElementById('admProdImg').value || PRODUCTS[0].images[0]],
+        description: 'Newly published VOGUEVA couture piece.',
+        sizeChart: { S: 'Standard S', M: 'Standard M', L: 'Standard L' }
+      });
+      ev.target.reset();
+      renderAll();
+      renderAdminPanel();
+      showToast('New product added to store');
+    }
+
+    function adminRestock(pid) {
+      const p = PRODUCTS.find(x => x.id === pid);
+      if (p) p.stock += 5;
+      renderAdminPanel();
+      showToast('Stock updated (+5)');
+    }
+
+    function adminDeleteProduct(pid) {
+      const idx = PRODUCTS.findIndex(x => x.id === pid);
+      if (idx >= 0) PRODUCTS.splice(idx, 1);
+      renderAll();
+      renderAdminPanel();
+      showToast('Product removed');
+    }
+
+    function adminUpdateOrderStatus(oid, status) {
+      const o = state.orders.find(x => x.id === oid);
+      if (o) o.status = status;
+      showToast(`Order ${oid} status set to ${status}`);
+    }
+
+    // Auth, Contact & Newsletter Helpers
+    function openAuthModal() {
+      const m = document.getElementById('authModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+    function closeAuthModal() {
+      const m = document.getElementById('authModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+    function handleAuthSubmit(ev) {
+      ev.preventDefault();
+      state.user.name = document.getElementById('authNameInput').value.trim();
+      state.user.email = document.getElementById('authEmailInput').value.trim();
+      document.getElementById('authHeaderLabel').textContent = state.user.name.split(' ')[0];
+      closeAuthModal();
+      showToast(`Signed in as ${state.user.name}`);
+    }
+    function submitContactForm(ev) {
+      ev.preventDefault();
+      ev.target.reset();
+      showToast('Inquiry sent to VOGUEVA Concierge');
+    }
+    function handleNewsletter(ev) {
+      ev.preventDefault();
+      ev.target.reset();
+      showToast('Subscribed to VOGUEVA Newsletter');
+    }
+
+    // Live Countdown Timer
+    let secsRemaining = 14 * 3600 + 38 * 60 + 45;
+    setInterval(() => {
+      if (secsRemaining > 0) secsRemaining--;
+      const h = Math.floor(secsRemaining / 3600);
+      const m = Math.floor((secsRemaining % 3600) / 60);
+      const s = secsRemaining % 60;
+      const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v).padStart(2, '0'); };
+      setTxt('cdHours', h);
+      setTxt('cdMins', m);
+      setTxt('cdSecs', s);
+    }, 1000);
+
+    function renderAll() {
+      renderHomeSections();
+      renderShopCatalog();
+      renderCart();
+      renderWishlist();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+    });
+  </script>
+</body>
+</html>
